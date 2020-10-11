@@ -1,0 +1,21 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Application
+    link(rel='stylesheet' href='https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css')
+  body
+    h1 Application
+    a(href="/applications") Back to Application List
+    table
+      tbody
+        - if (!application) application = {"id":"1","code":"GH", "name":"Global Care"}
+        tr
+          td ID
+          td= application.id
+        tr
+          td Code
+          td= application.code
+        tr
+          td Name
+          td= application.name

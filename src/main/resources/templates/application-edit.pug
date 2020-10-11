@@ -1,0 +1,34 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    - if (!add) add = false
+    - if (!application) application = {"id":1, "code":"GH", "name":"Global Care"}
+    - var myTitle="Create new Application";
+    - var myAction="/applications/add"
+    - var mySubmit="Create"
+    if (!add)
+      - myTitle="Edit Application"
+      - myAction="/applications/" + application.id + "/edit"
+      - mySubmit="Update"
+    title= myTitle
+    link(rel='stylesheet' href='https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css')
+  body
+    h1= myTitle
+    a(href="/applications") Back to Application List
+    form(name="application" method="POST" action=myAction)
+      table
+        if application.id
+            tr
+              td ID
+              td= application.id
+        tr
+          td Code
+          td
+            input(type="text" name="code" value=application.code)
+        tr
+          td Name
+          td
+            input(type="text" name="name" value=application.name)
+      input(type="submit" value=mySubmit)
+

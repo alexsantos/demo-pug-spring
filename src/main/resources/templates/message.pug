@@ -1,0 +1,21 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Message
+    link(rel='stylesheet' href='https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css')
+  body
+    h1 Message
+    a(href="/messages") Back to Message List
+    table
+      tbody
+        - if (!message) message = {"id":"1","code":"OMG", "event":"O19"}
+        tr
+          td ID
+          td= message.id
+        tr
+          td Code
+          td= message.code
+        tr
+          td Name
+          td= message.event
