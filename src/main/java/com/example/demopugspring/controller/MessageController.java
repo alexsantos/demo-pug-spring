@@ -29,7 +29,7 @@ public class MessageController {
         return "message-list";
     }
 
-    @GetMapping(value = "/message/{id}")
+    @GetMapping(value = "/messages/{id}")
     public String getMessage(Model model, @PathVariable(name = "id") Long id) {
         Message message = messageService.findById(id);
         model.addAttribute("message", message);

@@ -27,7 +27,7 @@ public class ApplicationController {
         return "application-list";
     }
 
-    @GetMapping(value = "/application/{id}")
+    @GetMapping(value = "/applications/{id}")
     public String getApp(Model model, @PathVariable(name = "id") Long id) {
         Application application = applicationService.findById(id);
         model.addAttribute("application", application);
@@ -48,7 +48,7 @@ public class ApplicationController {
         try {
             logger.info(application.toString());
             Application newApp = applicationService.save(application);
-            return "redirect:/application/" + String.valueOf(newApp.getId());
+            return "redirect:/applications/" + String.valueOf(newApp.getId());
         } catch (Exception ex) {
             // log exception first,
             // then show error

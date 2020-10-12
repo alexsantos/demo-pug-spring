@@ -22,9 +22,9 @@ html(lang="en")
           each val in messages
             tr
               td
-                a(href="message/" + val.id)= val.code
+                a(href="messages/" + val.id)= val.code
               td= val.event
               td
-                a(href="message/" + val.id + "/edit") Edit
+                a(href="messages/" + val.id + "/edit") Edit
               td
-                a(href="message/" + val.id + "/delete") Delete
+                a(href="messages/" + val.id + "/delete") Delete

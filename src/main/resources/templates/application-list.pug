@@ -25,9 +25,9 @@ html(lang="en")
           each val in applications
             tr
               td
-                a(href="application/" + val.id)= val.code
+                a(href="applications/" + val.id)= val.code
               td= val.name
               td
-                a(href="application/" + val.id + "/edit") Edit
+                a(href="applications/" + val.id + "/edit") Edit
               td
-                a(href="application/" + val.id + "/delete") Delete
+                a(href="applications/" + val.id + "/delete") Delete

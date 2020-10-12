@@ -1,3 +1,4 @@
+- if (!application) application = {"id":"1","code":"GH", "name":"Global Care"}
 doctype html
 html(lang="en")
   head
@@ -9,7 +10,6 @@ html(lang="en")
     a(href="/applications") Back to Application List
     table
       tbody
-        - if (!application) application = {"id":"1","code":"GH", "name":"Global Care"}
         tr
           td ID
           td= application.id
