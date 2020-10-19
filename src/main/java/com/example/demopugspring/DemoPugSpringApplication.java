@@ -35,13 +35,6 @@ public class DemoPugSpringApplication {
             applicationService.save(new Application("DOTLOGIC", "Dotlogic"));
             applicationService.save(new Application("CARDIOBASE", "Cardiobase"));
             applicationService.save(new Application("CWM", "Fuji"));
-            applicationService.save(new Application("CWM1", "Fuji"));
-            applicationService.save(new Application("CWM2", "Fuji"));
-            applicationService.save(new Application("CWM3", "Fuji"));
-            applicationService.save(new Application("CWM4", "Fuji"));
-            applicationService.save(new Application("CWM5", "Fuji"));
-            applicationService.save(new Application("CWM6", "Fuji"));
-            applicationService.save(new Application("CWM7", "Fuji"));
 
             // fetch all apps
             logger.info("Applications found with findAll():");

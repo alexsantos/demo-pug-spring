@@ -10,7 +10,12 @@ html(lang="en")
         +menu("messages")
       #main
         .content
-          h2.content-subhead Messages
+          .pure-g
+            .pure-u-1-2
+              h2.content-subhead Messages
+            .pure-u-1-2
+              p
+                a.pure-button.pure-button-primary(href="/messages/create") Create Message
           .pure-g
             .pure-u-1-2
               table.pure-table.pure-table-horizontal
@@ -30,6 +35,5 @@ html(lang="en")
                         td
                           a.pure-button.button-small(href="#")
                             i.fas.fa-pencil-alt
-            .pure-u-1-2
-              a.pure-button.pure-button-primary(href="/messages/create") Create Message
+
   include ../includes/footer
