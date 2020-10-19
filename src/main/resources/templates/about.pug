@@ -1,0 +1,31 @@
+-
+  if (!applications)
+    applications = [{"id":"1","code":"code","name":"name"}]
+doctype
+html(lang="en")
+  include includes/header
+  body
+    #layout
+      a(href="#menu" id="menuLink" class="menu-link")
+        span
+      #menu
+        include includes/menu
+        +menu("about")
+      #main
+        .content
+          h2.content-subhead Applications
+          table.pure-table
+            thead
+              tr
+                th #
+                th Code
+                th Name
+            tbody
+              each item in applications
+                tr
+                  td=item.id
+                  td=item.code
+                  td=item.name
+          p
+          a.pure-button.pure-button-primary(href="#") Create Application
+  include includes/footer

@@ -20,11 +20,11 @@ public class ApplicationController {
     @Autowired
     ApplicationService applicationService;
 
-    @GetMapping(value = "/applications")
+    @GetMapping(value = {"/applications", "/applications/index"})
     public String getApps(Model model) {
         List<Application> applications = applicationService.findAll();
         model.addAttribute("applications", applications);
-        return "application-list";
+        return "/applications/index";
     }
 
     @GetMapping(value = "/applications/{id}")
@@ -34,21 +34,21 @@ public class ApplicationController {
         return "application";
     }
 
-    @GetMapping(value = {"/applications/add"})
+    @GetMapping(value = {"/applications/create"})
     public String showAddApplication(Model model) {
         Application application = new Application();
         model.addAttribute("add", true);
         model.addAttribute("application", application);
-        return "application-edit";
+        return "/applications/create";
     }
 
-    @PostMapping(value = "/applications/add")
+    @PostMapping(value = "/applications/create")
     public String addApplication(Model model,
                           @ModelAttribute("application") Application application) {
         try {
             logger.info(application.toString());
-            Application newApp = applicationService.save(application);
-            return "redirect:/applications/" + String.valueOf(newApp.getId());
+            applicationService.save(application);
+            return "redirect:/applications";
         } catch (Exception ex) {
             // log exception first,
             // then show error
@@ -56,7 +56,7 @@ public class ApplicationController {
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("add", true);
-            return "application-edit";
+            return "/applications";
         }
     }
 }
