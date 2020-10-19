@@ -1,11 +1,20 @@
 package com.example.demopugspring.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 public class Mapper {
 
     public enum Category {
@@ -19,59 +28,24 @@ public class Mapper {
             this.value = value;
         }
 
-        @JsonValue
+        //@JsonValue
         public String getValue() {
             return value;
         }
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> key;
     private String value;
-    private Mapper.Category type;
+    private Mapper.Category category;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public List<String> getKey() {
-        return key;
-    }
-
-    public void setKey(List<String> key) {
+    public Mapper(List<String> key, String value, Mapper.Category category) {
         this.key = key;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
         this.value = value;
+        this.category = category;
     }
 
-    public Mapper.Category getType() {
-        return type;
-    }
-
-    public void setType(Mapper.Category type) {
-        this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        return "Mapper{" +
-                "id=" + id +
-                ", key=" + key +
-                ", value='" + value + '\'' +
-                ", type=" + type +
-                '}';
-    }
 }

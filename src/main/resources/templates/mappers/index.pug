@@ -7,29 +7,35 @@ html(lang="en")
         span
       #menu
         include ../includes/menu
-        +menu("messages")
+        +menu("mappers")
       #main
         .content
-          h2.content-subhead Messages
+          .pure-g
+            .pure-u-1-2
+              h2.content-subhead Mappers
+            .pure-u-1-2
+              p
+                a.pure-button.pure-button-primary(href="/mappers/create") Create Mapper
           .pure-g
             .pure-u-1-2
               table.pure-table.pure-table-horizontal
                 thead
                   tr
                     th #
-                    th Code
-                    th Event
+                    th Keys
+                    th Value
+                    th Category
                     th 
                 tbody
-                    - if (!messages) messages = []
-                    each item in messages
+                    - if (!mappers) mappers = []
+                    each item in mappers
                       tr
                         td=item.id
-                        td=item.code
-                        td=item.event
+                        td=item.key
+                        td=item.value
+                        td=item.category
                         td
                           a.pure-button.button-small(href="#")
                             i.fas.fa-pencil-alt
-            .pure-u-1-2
-              a.pure-button.pure-button-primary(href="/messages/create") Create Message
+
   include ../includes/footer
