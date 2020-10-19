@@ -7,22 +7,29 @@ html(lang="en")
         span
       #menu
         include ../includes/menu
-        +menu("about")
+        +menu("applications")
       #main
         .content
           h2.content-subhead Applications
-          table.pure-table
-            thead
-              tr
-                th #
-                th Code
-                th Name
-            tbody
-                each item in applications
+          .pure-g
+            .pure-u-1-2
+              table.pure-table.pure-table-horizontal
+                thead
                   tr
-                    td=item.id
-                    td=item.code
-                    td=item.name
-          p
-          a.pure-button.pure-button-primary(href="/applications/create") Create Application
+                    th #
+                    th Code
+                    th Name
+                    th
+                tbody
+                  - if (!applications) applications = []
+                  each item in applications
+                    tr
+                      td=item.id
+                      td=item.code
+                      td=item.name
+                      td
+                        a.pure-button.button-small(href="#")
+                          i.fas.fa-pencil-alt
+            .pure-u-1-2
+              a.pure-button.pure-button-primary(href="/applications/create") Create Application
   include ../includes/footer

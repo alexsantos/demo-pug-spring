@@ -1,0 +1,35 @@
+doctype
+html(lang="en")
+  include ../includes/header
+  body
+    #layout
+      a(href="#menu" id="menuLink" class="menu-link")
+        span
+      #menu
+        include ../includes/menu
+        +menu("messages")
+      #main
+        .content
+          h2.content-subhead Messages
+          .pure-g
+            .pure-u-1-2
+              table.pure-table.pure-table-horizontal
+                thead
+                  tr
+                    th #
+                    th Code
+                    th Event
+                    th 
+                tbody
+                    - if (!messages) messages = []
+                    each item in messages
+                      tr
+                        td=item.id
+                        td=item.code
+                        td=item.event
+                        td
+                          a.pure-button.button-small(href="#")
+                            i.fas.fa-pencil-alt
+            .pure-u-1-2
+                a.pure-button.pure-button-primary(href="/messages/create") Create Message
+  include ../includes/footer

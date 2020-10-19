@@ -1,0 +1,21 @@
+doctype
+html(lang="en")
+  include ../includes/header
+  body
+    #layout
+      a(href="#menu" id="menuLink" class="menu-link")
+        span
+      #menu
+        include ../includes/menu
+        +menu("about")
+      #main
+        .content
+          form.pure-form.pure-form-stacked(name="messages" action="/messages/create" method="POST")
+            fieldset
+              legend Create a new message
+              label(for="code") Code
+              input(type="text" id="code" name="code")
+              label(for="event") Name
+              input(type="text" id="event" name="event")
+              button.pure-button.pure-button-primary(type="submit") Create
+  include ../includes/footer
