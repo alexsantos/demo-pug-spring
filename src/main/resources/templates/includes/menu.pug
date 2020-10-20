@@ -1,19 +1,20 @@
 -
   var menu = [
-      {"name": "Home", "link": "index"},
-      {"name": "Applications", "link": "applications"},
-      {"name": "Messages", "link": "messages"},
-      {"name": "Mappers", "link": "mappers"}
+    {"name": "Home", "link": "index"},
+    {"name": "Applications", "link": "applications"},
+    {"name": "Messages", "link": "messages"},
+    {"name": "Mappers", "link": "mappers"},
+    {"name": "Integrations", "link": "integrations"}
   ];
 
 mixin menu(page)
   .pure-menu
     a.pure-menu-heading(href="index") Company
     ul.pure-menu-list
-      each item in menu
-        if item.link == page
-          li.pure-menu-item.pure-menu-selected
-            a.pure-menu-link()=item.name
-        else
-          li.pure-menu-item
-            a.pure-menu-link(href="/"+item.link)=item.name
+        each item in menu
+          if item.link == page
+            li.pure-menu-item.pure-menu-selected
+              a.pure-menu-link(href="/" + item.link)=item.name
+          else
+            li.pure-menu-item
+              a.pure-menu-link(href="/" + item.link)=item.name

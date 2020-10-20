@@ -1,9 +1,11 @@
 package com.example.demopugspring;
 
 import com.example.demopugspring.model.Application;
+import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.model.Message;
 import com.example.demopugspring.service.ApplicationService;
+import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MapperService;
 import com.example.demopugspring.service.MessageService;
 import org.slf4j.Logger;
@@ -28,7 +30,8 @@ public class DemoPugSpringApplication {
     @Bean
     public CommandLineRunner loadApplications(ApplicationService applicationService,
                                               MessageService messageService,
-                                              MapperService mapperService) {
+                                              MapperService mapperService,
+                                              IntegrationService integrationService) {
         return (args) -> {
             // save apps
             applicationService.save(new Application("GH", "Global Care"));
@@ -59,12 +62,24 @@ public class DemoPugSpringApplication {
             Mapper map = new Mapper(Arrays.asList(keys.clone()), "OMG_O19", Mapper.Category.TEXT);
             logger.info(map.toString());
             mapperService.save(map);
+            mapperService.save(new Mapper(Arrays.asList("MSH-12"), "2.5", Mapper.Category.TEXT));
 
             // fetch all messages
             logger.info("Mappers found with findAll():");
             logger.info("-------------------------------");
             for (Mapper mapper : mapperService.findAll()) {
                 logger.info(mapper.toString());
+            }
+            logger.info("");
+
+            logger.info("");
+            integrationService.save(new Integration(messageService.findById(5L), applicationService.findById(1L), applicationService.findById(2L), Arrays.asList(mapperService.findById(8L))));
+
+            // fetch all integrations
+            logger.info("Integrations found with findAll():");
+            logger.info("-------------------------------");
+            for (Integration integration : integrationService.findAll()) {
+                logger.info(integration.toString());
             }
             logger.info("");
         };

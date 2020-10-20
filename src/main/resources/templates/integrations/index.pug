@@ -7,30 +7,36 @@ html(lang="en")
         span
       #menu
         include ../includes/menu
-        +menu("integrstiond")
+        +menu("integrations")
       #main
         .content
-          h2.content-subhead Integrations
           .pure-g
             .pure-u-1-2
+              h2.content-subhead Integrations
+            .pure-u-1-2
+              p
+                a.pure-button.pure-button-primary(href="/integrations/create") Create Integration
+          .pure-g
+            .pure-u-1-1
               table.pure-table.pure-table-horizontal
                 thead
                   tr
                     th #
                     th Message
                     th Sending Application
-                    th Receivinf Application
+                    th Receiving Application
                     th
                 tbody
                   - if (!integrations) integrations = []
                   each item in integrations
                     tr
-                      td=item.id
-                      td=item.code
-                      td=item.name
+                      td
+                        a(href="/integrations/"+item.id)=item.id
+                      td=item.message.code
+                      td=item.sendingApp.code
+                      td=item.receivingApp.code
                       td
                         a.pure-button.button-small(href="#")
                           i.fas.fa-pencil-alt
-            .pure-u-1-2
-              a.pure-button.pure-button-primary(href="/integrations/create") Create Integration
+
   include ../includes/footer

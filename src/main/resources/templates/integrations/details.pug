@@ -1,0 +1,70 @@
+- var idList = [1,2,3,8];
+  // for map in integration.mappers
+  //   =idList.push(map.id)
+  Array.prototype.exists = function() {
+    ler result = false;
+
+
+doctype
+html(lang="en")
+  include ../includes/header
+  body
+    #layout
+      a(href="#menu" id="menuLink" class="menu-link")
+        span
+      #menu
+        include ../includes/menu
+        +menu("integrations")
+      #main
+        .content
+          .pure-g
+            .pure-u-1-2
+              h2.content-subhead Integrations
+          .pure-g
+            .pure-u-1-1
+              table.pure-table.pure-table-horizontal
+                thead
+                  tr
+                    th #
+                    th Message
+                    th Sending Application
+                    th Receiving Application
+                tbody
+                  tr
+                    td=integration.id
+                    td=integration.message.code
+                    td=integration.sendingApp.code
+                    td=integration.receivingApp.code
+              =integration.mappers
+            .pure-u-1-1
+              h3 Mapper List
+              table.pure-table.pure-table-horizontal
+                thead
+                  tr
+                    th #
+                    th Keys
+                    th Value
+                    th Category
+                    th ON
+                tbody
+                  each item in mappers
+                    tr
+                      td=item.id
+                      td=item.key
+                      td=item.value
+                      td=item.category
+                      td
+                        for i in idList
+                          if (i == item.id)
+                            ="IGUAL"
+                          else
+                            ="DIFERENTE"
+                        != "X is #" + x + "#"
+                        = item.id + "=>" + x
+                        if (idList.find(function (x){return x == item.id}))
+                          input(type="checkbox" id="included" name="included" "checked")
+                        else
+                          input(type="checkbox" id="included" name="included")
+              p
+                a.pure-button.pure-button-primary(href="/mappers/create?integration="+integration.id) Create Mapper
+  include ../includes/footer
