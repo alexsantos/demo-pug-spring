@@ -1,7 +1,9 @@
 package com.example.demopugspring.service;
 
+import com.example.demopugspring.model.Application;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
+import com.example.demopugspring.model.Message;
 import com.example.demopugspring.repository.IntegrationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,5 +47,9 @@ public class IntegrationService {
         logger.info(mappers.toString());
         integration.setMappers(mappers);
         return save(integration);
+    }
+
+    public Integration findByMessageAndApplications(Message message, Application sending, Application receiving) {
+        return integrationRepository.findByMessageAndSendingAppAndReceivingApp(message, sending, receiving);
     }
 }

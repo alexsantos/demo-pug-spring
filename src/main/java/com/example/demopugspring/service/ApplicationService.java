@@ -25,4 +25,8 @@ public class ApplicationService {
     public Application save(Application application) {
         return applicationRepository.save(application);
     }
+
+    public Application findByCode(String code) {
+        return applicationRepository.findByCode(code);
+    }
 }
