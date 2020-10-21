@@ -24,7 +24,7 @@ public class Integration {
     private Application sendingApp;
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Application receivingApp;
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Mapper> mappers;
 
     public Integration(Message message, Application sendingApp, Application receivingApp, List<Mapper> mappers) {
@@ -32,5 +32,14 @@ public class Integration {
         this.sendingApp = sendingApp;
         this.receivingApp = receivingApp;
         this.mappers = mappers;
+    }
+
+    public boolean hasMapper(Long id) {
+        for (Mapper mapper: this.mappers) {
+            if (mapper.getId() == id) {
+                return true;
+            }
+        }
+        return false;
     }
 }

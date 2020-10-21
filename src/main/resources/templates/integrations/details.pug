@@ -1,10 +1,3 @@
-- var idList = [1,2,3,8];
-  // for map in integration.mappers
-  //   =idList.push(map.id)
-  Array.prototype.exists = function() {
-    ler result = false;
-
-
 doctype
 html(lang="en")
   include ../includes/header
@@ -35,36 +28,30 @@ html(lang="en")
                     td=integration.message.code
                     td=integration.sendingApp.code
                     td=integration.receivingApp.code
-              =integration.mappers
             .pure-u-1-1
               h3 Mapper List
-              table.pure-table.pure-table-horizontal
-                thead
-                  tr
-                    th #
-                    th Keys
-                    th Value
-                    th Category
-                    th ON
-                tbody
-                  each item in mappers
+              form(name="integration" action="/integrations/update" method="POST")
+                input(type="hidden" name="id" value=integration.id)
+                table.pure-table.pure-table-horizontal
+                  thead
                     tr
-                      td=item.id
-                      td=item.key
-                      td=item.value
-                      td=item.category
-                      td
-                        for i in idList
-                          if (i == item.id)
-                            ="IGUAL"
+                      th #
+                      th Keys
+                      th Value
+                      th Category
+                      th ON
+                  tbody
+                    each item in mappers
+                      tr
+                        td=item.id
+                        td=item.key
+                        td=item.value
+                        td=item.category
+                        td
+                          if (integration.hasMapper(item.id))
+                            input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
                           else
-                            ="DIFERENTE"
-                        != "X is #" + x + "#"
-                        = item.id + "=>" + x
-                        if (idList.find(function (x){return x == item.id}))
-                          input(type="checkbox" id="included" name="included" "checked")
-                        else
-                          input(type="checkbox" id="included" name="included")
-              p
-                a.pure-button.pure-button-primary(href="/mappers/create?integration="+integration.id) Create Mapper
+                            input(type="checkbox" id="included" name="mappers" value=item.id)
+                p
+                  button.pure-button.pure-button-primary(type="submit") Update Integration
   include ../includes/footer

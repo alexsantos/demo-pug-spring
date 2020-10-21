@@ -9,7 +9,8 @@
 
 mixin menu(page)
   .pure-menu
-    a.pure-menu-heading(href="index") Company
+    a.pure-menu-heading(href="index")
+      img.pure-img(src="../static/images/logo.svg" alt="Logo" style="max-width:80%;")
     ul.pure-menu-list
         each item in menu
           if item.link == page

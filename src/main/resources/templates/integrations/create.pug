@@ -7,15 +7,23 @@ html(lang="en")
         span
       #menu
         include ../includes/menu
-        +menu("about")
+        +menu("integrations")
       #main
         .content
-          form.pure-form.pure-form-stacked(name="application" action="/applications/create" method="POST")
+          form.pure-form.pure-form-stacked(name="integration" action="/integrations/create" method="POST")
             fieldset
-              legend Create a new application
-              label(for="code") Code
-              input(type="text" id="code" name="code")
-              label(for="name") Name
-              input(type="text" id="name" name="name")
+              legend Create a new Integration
+              label(for="message") Message
+              select(id="message" name="message")
+                each message in messages
+                    option(value=message.id)= message.code + "-" + message.event
+              label(for="sendingApp") Sending Application
+              select(id="sendingApp" name="sendingApp")
+                each application in applications
+                  option(value=application.id)= application.code
+              label(for="receivingApp") Receiving Application
+              select(id="receivingApp" name="receivingApp")
+                each application in applications
+                  option(value=application.id)= application.code
               button.pure-button.pure-button-primary(type="submit") Create
   include ../includes/footer
