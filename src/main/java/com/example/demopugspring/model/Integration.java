@@ -36,7 +36,7 @@ public class Integration {
 
     public boolean hasMapper(Long id) {
         for (Mapper mapper: this.mappers) {
-            if (mapper.getId() == id) {
+            if (mapper.getId().equals(id)) {
                 return true;
             }
         }

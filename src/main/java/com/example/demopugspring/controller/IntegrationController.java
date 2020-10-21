@@ -1,6 +1,5 @@
 package com.example.demopugspring.controller;
 
-import com.example.demopugspring.helper.PugHelper;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.service.ApplicationService;
@@ -49,7 +48,6 @@ public class IntegrationController {
 
     @GetMapping(value = {"/integrations/create"})
     public String showAddIntegration(Model model) {
-        Integration integration = new Integration();
         model.addAttribute("messages", messageService.findAll());
         model.addAttribute("applications", applicationService.findAll());
         return "/integrations/create";

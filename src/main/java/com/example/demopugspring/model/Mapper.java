@@ -1,13 +1,11 @@
 package com.example.demopugspring.model;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
