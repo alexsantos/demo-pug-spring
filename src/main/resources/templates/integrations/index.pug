@@ -32,9 +32,12 @@ html(lang="en")
                     tr
                       td
                         a(href="/integrations/"+item.id)=item.id
-                      td=item.message.code + "-" + item.message.event
-                      td=item.sendingApp.code
-                      td=item.receivingApp.code
+                      td
+                        a(href="/integrations/"+item.id)=item.message.code + "-" + item.message.event
+                      td
+                        a(href="/integrations/"+item.id)=item.sendingApp.code
+                      td
+                        a(href="/integrations/"+item.id)=item.receivingApp.code
                       td
                         a.pure-button.button-small(href="#")
                           i.fas.fa-pencil-alt

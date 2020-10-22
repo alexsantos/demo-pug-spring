@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -85,7 +86,7 @@ public class IntegrationRestController {
             terser.set(field.get(2), "ISO");
         }
     }
-    @PostMapping(value = "/mapper", consumes = "application/hl7-v2", produces = "application/hl7-v2")
+    @PostMapping(value = "/mapper", consumes = "application/hl7-v2", produces = MediaType.TEXT_PLAIN_VALUE)
     public String map(@RequestBody String msg) throws HL7Exception {
         HapiContext context = ContextSingleton.getInstance();
         PipeParser parser = context.getPipeParser();
@@ -96,7 +97,7 @@ public class IntegrationRestController {
         String messageEvent = terser.get("MSH-9-2");
         String sendingApp = terser.get("MSH-3-1");
         String receivingApp = terser.get("MSH-5-1");
-
+        log.info("PV1-2:" + terser.get(".PV1-2"));
         Integration integration = integrationService.findByMessageAndApplications(
                 messageService.findByCodeAndEvent(messageCode, messageEvent),
                 applicationService.findByCode(sendingApp),
