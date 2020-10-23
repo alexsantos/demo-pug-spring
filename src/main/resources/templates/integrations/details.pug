@@ -44,7 +44,7 @@ html(lang="en")
                     each item in mappers
                       tr
                         td=item.id
-                        td=item.key
+                        td=PugHelper.join(",", item.key)
                         td=item.value
                         td=item.category
                         td

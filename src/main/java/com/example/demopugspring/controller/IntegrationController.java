@@ -1,5 +1,6 @@
 package com.example.demopugspring.controller;
 
+import com.example.demopugspring.helper.PugHelper;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.service.ApplicationService;
@@ -43,6 +44,7 @@ public class IntegrationController {
         List<Mapper> mappers = mapperService.findAll();
         model.addAttribute("integration", integration);
         model.addAttribute("mappers", mappers);
+        model.addAttribute("PugHelper", new PugHelper());
         return "integrations/details";
     }
 

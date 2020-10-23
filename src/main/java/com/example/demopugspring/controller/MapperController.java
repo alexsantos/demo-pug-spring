@@ -1,9 +1,8 @@
 package com.example.demopugspring.controller;
 
+import com.example.demopugspring.helper.PugHelper;
 import com.example.demopugspring.model.Mapper;
-import com.example.demopugspring.model.Message;
 import com.example.demopugspring.service.MapperService;
-import com.example.demopugspring.service.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ public class MapperController {
     public String getMaps(Model model) {
         List<Mapper> mappers = mapperService.findAll();
         model.addAttribute("mappers", mappers);
+        model.addAttribute("PugHelper", new PugHelper());
         logger.info(mappers.toString());
         return "mappers/index";
     }

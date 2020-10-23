@@ -9,7 +9,17 @@ html(lang="en")
         include includes/menu
         +menu("index.html")
       #main
-        .header
+        .header(style="text-align:left;")
           h1 HL7v2 Mapper Administrator
           h2 A tool to configure all your HL7 v2 mappers
+          h3.content-subhead Testing the mappers
+          .pure-u
+            form.pure-u-1(action="/" method="POST" name="source")
+              textarea(name="source" rows="20" cols="250" style="font-family:monospace; text-align:left;")= source
+              p
+              button.pure-button.pure-button-primary(type="submit") Test the mapper
+              p
+            div.pure-u-1
+              textarea(rows="20" cols="250" readonly style="font-family:monospace; text-align:left;")= response
+
   include includes/footer

@@ -5,12 +5,7 @@ import com.example.demopugspring.model.Mapper;
 import java.util.List;
 
 public class PugHelper {
-    public boolean exists(List<Mapper> list, Long value) {
-        for (Mapper mapper : list) {
-            if (mapper.getId() == value) {
-                return true;
-            }
-        }
-        return false;
+    public String join(String delimiter, List<String> text) {
+        return String.join(delimiter, text);
     }
 }

@@ -18,6 +18,7 @@ public class Mapper {
     public enum Category {
         TEXT("text"),
         FIELD("field"),
+        SWAP("swap"),
         TRANSCODING("transcoding");
 
         private final String value;
