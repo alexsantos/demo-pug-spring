@@ -80,6 +80,7 @@ public class IntegrationController {
             logger.info("Integration ID:" + id);
             logger.info(mappers.toString());
             integrationService.updateMappers(id, mappers);
+            model.addAttribute("success", "1");
             return "redirect:/integrations/".concat(String.valueOf(id));
         } catch (Exception ex) {
             // log exception first,

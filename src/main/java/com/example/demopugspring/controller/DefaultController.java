@@ -2,6 +2,7 @@ package com.example.demopugspring.controller;
 
 import ca.uhn.hl7v2.HL7Exception;
 import com.example.demopugspring.engine.MapperEngine;
+import com.example.demopugspring.engine.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Arrays;
 
 @Controller
 public class DefaultController {
@@ -31,13 +34,8 @@ public class DefaultController {
                          @RequestParam("source") String source) throws HL7Exception {
         logger.info("invoke...");
         model.addAttribute("source", source);
-        String response;
-        try {
-            response = mapperEngine.invoke(source);
-        } catch (HL7Exception e) {
-            e.printStackTrace();
-            response = "ERROR";
-        }
+        Response response = null;
+        response = mapperEngine.run(source);
         model.addAttribute("response", response);
         return "index";
     }

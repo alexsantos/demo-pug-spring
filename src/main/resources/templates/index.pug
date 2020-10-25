@@ -15,11 +15,26 @@ html(lang="en")
           h3.content-subhead Testing the mappers
           .pure-u
             form.pure-u-1(action="/" method="POST" name="source")
-              textarea(name="source" rows="20" cols="250" style="font-family:monospace; text-align:left;")= source
+              textarea(id="source" name="source" required="required" rows="20" cols="250" style="font-family:monospace; text-align:left;")= source
               p
               button.pure-button.pure-button-primary(type="submit") Test the mapper
               p
             div.pure-u-1
-              textarea(rows="20" cols="250" readonly style="font-family:monospace; text-align:left;")= response
+              if (response.errorList.size() > 0)
+                - var i = 1
+                table.pure-table.pure-table-bordered(style="font-size: 80%;")
+                  thead(style="color: red;")
+                    th #
+                    th Fields
+                    th Error
+                  tbody
+                    each error in response.errorList
+                      tr
+                        td= i
+                        td= error.field
+                        td= error.error
+                        - i++
+              p
+              textarea(rows="20" cols="250" readonly style="font-family:monospace; text-align:left;")= response.message
 
   include includes/footer

@@ -1,0 +1,27 @@
+-
+  var fields = {
+    "legend": "Edit an application",
+    "values": [
+      {"id": "id", "name":"id", "type":"hidden"},
+      {"id": "code", "name": "code", "label": "Code", "type": "text"},
+      {"id": "name", "name": "name", "label": "Name", "type": "text"}
+    ]
+  }
+
+doctype
+html(lang="en")
+  include ../includes/header
+  body
+    #layout
+      a(href="#menu" id="menuLink" class="menu-link")
+        span
+      #menu
+        include ../includes/menu
+        +menu("about")
+      #main
+        .content
+          form.pure-form.pure-form-stacked(name="application" action="/applications/edit" method="POST")
+            fieldset
+              include ../includes/fieldset
+              +fieldset(fields, application)
+  include ../includes/footer

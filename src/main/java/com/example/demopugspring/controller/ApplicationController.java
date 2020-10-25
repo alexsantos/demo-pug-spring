@@ -33,6 +33,30 @@ public class ApplicationController {
         return "application";
     }
 
+    @GetMapping(value = {"/applications/edit"})
+    public String showEditApp(Model model, @RequestParam("id") Long id) {
+        Application application = applicationService.findById(id);
+        model.addAttribute("application", application);
+        return "/applications/edit";
+    }
+
+    @PostMapping(value = "/applications/edit")
+    public String updateApp(Model model,
+                            @ModelAttribute("application") Application application) {
+        try {
+            logger.info("Updating application" + application.getName());
+            applicationService.save(application);
+            return "redirect:/applications";
+        } catch (Exception ex) {
+            // log exception first,
+            // then show error
+            String errorMessage = ex.getMessage();
+            logger.error(errorMessage);
+            model.addAttribute("errorMessage", errorMessage);
+            return "/applications";
+        }
+    }
+
     @GetMapping(value = {"/applications/create"})
     public String showAddApplication(Model model) {
         Application application = new Application();

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,29 +41,34 @@ public class MapperEngine {
             + "ORC|SC|5926450||11959318|CA||1.000||20200709192250|270680187^Geraldes^Ines Isabel da Cunha Lima|||HOS-1C7\r"
             + "OBR|1|5926450||9000003^ECG SIMPLES||20200709192250|20200709191513||||||||||||||||||||1^^^20200709000000|||||5000305&Ramos&Sousa||||20200709191513";
 */
-
-    private void transcode(Terser terser, List<String> field, String system) throws HL7Exception {
+    private void transcode(Terser terser, List<String> field, String system, List<MapperError> errorList) {
         System.out.println("System:" + system);
-        switch (system) {
-            case "ICD-10":
-                System.out.println("ICD-10");
-                System.out.println(field);
-                terser.set(field.get(0), "1");
-                terser.set(field.get(1), "UM");
-                terser.set(field.get(2), "ISO");
-                break;
-            case "GH-LOCATIONS":
-                System.out.println("GH-LOCATIONS");
-                System.out.println(field);
-                terser.set(field.get(0), "cardiology");
-                terser.set(field.get(1), "CARDIOLOGY");
-                break;
-            default:
-                log.error("No defined code system.");
+        try {
+            switch (system) {
+                case "ICD-10":
+                    System.out.println("ICD-10");
+                    System.out.println(field);
+                    terser.set(field.get(0), "1");
+                    terser.set(field.get(1), "UM");
+                    terser.set(field.get(2), "ISO");
+                    break;
+                case "GH-LOCATIONS":
+                    System.out.println("GH-LOCATIONS");
+                    System.out.println(field);
+                    terser.set(field.get(0), "cardiology");
+                    terser.set(field.get(1), "CARDIOLOGY");
+                    break;
+                default:
+                    log.error("No defined code system.");
+                    errorList.add(new MapperError(field.toString(),"No defined code system: " + system));
+            }
+        } catch (HL7Exception ex) {
+            log.error(ex.getMessage());
+            errorList.add(new MapperError(field.toString(), ex.getMessage()));
         }
     }
 
-    private void mapper(Terser terser, List<String> fields, String value, Mapper.Category type) {
+    private void mapper(Terser terser, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         fields.forEach(field -> {
             try {
                 if (field.contains("#")) {
@@ -97,6 +103,7 @@ public class MapperEngine {
                                 break;
                             default:
                                 log.error("No defined Category");
+                                errorList.add(new MapperError(field, "No Category defined as: " + type));
                         }
                         i++;
                     }
@@ -116,49 +123,66 @@ public class MapperEngine {
                             break;
                         default:
                             log.error("No defined category");
+                            errorList.add(new MapperError(field, "No Category defined as " + type));
                     }
                 }
             } catch (HL7Exception ex) {
                 log.error("Error on HL7 mapping", ex);
+                errorList.add(new MapperError(field, ex.getMessage()));
             }
         });
     }
 
-    public String invoke(String msg) throws HL7Exception {
+    public Response run(String msg) {
+        String result = "";
+        Response response = new Response();
+        List<MapperError> errorList = new ArrayList<>();
         HapiContext context = ContextSingleton.getInstance();
         PipeParser parser = context.getPipeParser();
-        Message message = parser.parse(msg);
-        log.info(message.encode());
-        Terser terser = new Terser(message);
-        String messageCode = terser.get("MSH-9-1");
-        String messageEvent = terser.get("MSH-9-2");
-        String sendingApp = terser.get("MSH-3-1");
-        String receivingApp = terser.get("MSH-5-1");
-        log.info("PV1-2:" + terser.get(".PV1-2"));
-        Integration integration = integrationService.findByMessageAndApplications(
-                messageService.findByCodeAndEvent(messageCode, messageEvent),
-                applicationService.findByCode(sendingApp),
-                applicationService.findByCode(receivingApp));
-        log.info("Integration:" + integration.getMappers().toString());
+        try {
+            Message message = parser.parse(msg);
+            log.info(message.encode());
+            Terser terser = new Terser(message);
+            String messageCode = terser.get("MSH-9-1");
+            String messageEvent = terser.get("MSH-9-2");
+            String sendingApp = terser.get("MSH-3-1");
+            String receivingApp = terser.get("MSH-5-1");
+            log.info("PV1-2:" + terser.get(".PV1-2"));
 
-        for (Mapper mapper : integration.getMappers()) {
-            switch (mapper.getCategory()) {
-                case TEXT:
-                case FIELD:
-                case SWAP:
-                    log.info("TEXT or FIELD");
-                    mapper(terser, mapper.getKey(), mapper.getValue(), mapper.getCategory());
-                    break;
-                case TRANSCODING:
-                    transcode(terser, mapper.getKey(), mapper.getValue());
-                    break;
-                default:
-                    throw (new HL7Exception("TESTE"));
+            Integration integration = integrationService.findByMessageAndApplications(
+                    messageService.findByCodeAndEvent(messageCode, messageEvent),
+                    applicationService.findByCode(sendingApp),
+                    applicationService.findByCode(receivingApp));
+            if (integration == null) {
+                throw new HL7Exception("No integration found for message " + messageCode + "-" + messageEvent +
+                        " and sending application " + sendingApp + " and receiving application " + receivingApp);
             }
+            log.info("Integration:" + integration.getMappers().toString());
+
+            for (Mapper mapper : integration.getMappers()) {
+                switch (mapper.getCategory()) {
+                    case TEXT:
+                    case FIELD:
+                    case SWAP:
+                        log.info("TEXT or FIELD");
+                        mapper(terser, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
+                        break;
+                    case TRANSCODING:
+                        transcode(terser, mapper.getKey(), mapper.getValue(), errorList);
+                        break;
+                    default:
+                        errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapper.getCategory()));
+                }
+            }
+            result = message.encode();
+            log.info(result);
+        } catch (HL7Exception ex) {
+            log.error(ex.getMessage());
+            errorList.add(new MapperError("Global", ex.getMessage()));
         }
-        String result = message.encode();
-        log.info(result);
-        return result;
+        response.setMessage(result);
+        response.setErrorList(errorList);
+        return response;
     }
 
 }

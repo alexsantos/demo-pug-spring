@@ -11,13 +11,14 @@ html(lang="en")
       #main
         .content
           .pure-g
-            .pure-u-1-2
-              h2.content-subhead Applications
-            .pure-u-1-2
+            .pure-u-1
               p
                 a.pure-button.pure-button-primary(href="/applications/create") Create Application
           .pure-g
-            .pure-u-1-2
+            .pure-u-1
+              h3 Applications
+          .pure-g
+            .pure-u-1
               table.pure-table.pure-table-horizontal
                 thead
                   tr
@@ -33,7 +34,10 @@ html(lang="en")
                       td=item.code
                       td=item.name
                       td
-                        a.pure-button.button-small(href="#")
-                          i.fas.fa-pencil-alt
+                        .pure-button-group(role="group")
+                          button.pure-button.button-small(onclick="location.href='/applications/edit?id=" + item.id + "'")
+                            i.fas.fa-pencil-alt
+                          button.pure-button.button-small(onclick="location.href='/applications/delete?id=" + item.id + "'")
+                            i.fas.fa-trash-alt
 
   include ../includes/footer

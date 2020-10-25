@@ -1,6 +1,9 @@
-mixin fieldset(data)
-  legend= data.legend
-  for item in data.values
-    label(for=item.id)
-    input(type="text" id=item.id name=item.name)
-  button.pure-button.pure-button-primary(type="submit") Create
+mixin fieldset(fields, data)
+  legend= fields.legend
+  for item in fields.values
+    label(for=item.id)= item.label
+    if (item.type == "text")
+      input(type="text" id=item.id name=item.name value=data[item.name])
+    else if (item.type == "hidden")
+        input(type="hidden" id=item.id name=item.id value=data[item.id])
+  button.pure-button.pure-button-primary(type="submit") Submit
