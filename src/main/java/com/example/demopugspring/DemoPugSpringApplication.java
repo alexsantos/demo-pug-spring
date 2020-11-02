@@ -28,7 +28,7 @@ public class DemoPugSpringApplication {
     }
 
 
-    /*
+
     @Bean
     public CommandLineRunner loadApplications(ApplicationService applicationService,
                                               MessageService messageService,
@@ -86,7 +86,7 @@ public class DemoPugSpringApplication {
             logger.info("");
         };
     }
-    */
+
 
 
 }
