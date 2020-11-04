@@ -60,13 +60,16 @@ public class DemoPugSpringApplication {
                 logger.info(message.toString());
             }
             logger.info("");
-            String[] keys = {"/MSH-9-3"};
-            Mapper map = new Mapper(Arrays.asList(keys.clone()), "OMG_O19", Mapper.Category.TEXT);
-            logger.info(map.toString());
-            mapperService.save(map);
-            mapperService.save(new Mapper(Arrays.asList("MSH-12"), "2.5", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/MSH-9-3"), "OMG_O19", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/MSH-12"), "2.5", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/OBSERVATION(0)/OBX-1"), "1", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/NTE-3"), "Nota do MSH", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/PATIENT/NTE-3"), "Nota do patient", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/NTE-3"), "Nota da Order", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/OBSERVATION/NTE-3"), "Nota da Observation", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/OBR-4-1","/ORDER/OBR-4-2","/ORDER/OBR-4-3"), "ICD-10", Mapper.Category.TRANSCODING));
 
-            // fetch all messages
+            // fetch all mappers
             logger.info("Mappers found with findAll():");
             logger.info("-------------------------------");
             for (Mapper mapper : mapperService.findAll()) {
