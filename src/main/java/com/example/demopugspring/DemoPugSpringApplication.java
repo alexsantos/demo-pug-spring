@@ -68,7 +68,12 @@ public class DemoPugSpringApplication {
             mapperService.save(new Mapper(Arrays.asList("/ORDER/NTE-3"), "Nota da Order", Mapper.Category.TEXT));
             mapperService.save(new Mapper(Arrays.asList("/ORDER/OBSERVATION/NTE-3"), "Nota da Observation", Mapper.Category.TEXT));
             mapperService.save(new Mapper(Arrays.asList("/ORDER/OBR-4-1","/ORDER/OBR-4-2","/ORDER/OBR-4-3"), "ICD-10", Mapper.Category.TRANSCODING));
-
+            mapperService.save(new Mapper(Arrays.asList("/MSH-3"), "/MSH-5", Mapper.Category.SWAP));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/OBSERVATION/OBR-3"), "/ORDER/OBSERVATION/OBR-2", Mapper.Category.FIELD));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/OBSERVATION/OBR-2"), "", Mapper.Category.TEXT));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/ORC"), "", Mapper.Category.SEGMENT));
+            mapperService.save(new Mapper(Arrays.asList("/ORDER/ORC-3"), "/MSH-4,/ORDER/ORC-2", Mapper.Category.JOIN));
+            mapperService.save(new Mapper(Arrays.asList("/PATIENT/PID/PID-3-1"), "", Mapper.Category.NUMERIC));
             // fetch all mappers
             logger.info("Mappers found with findAll():");
             logger.info("-------------------------------");

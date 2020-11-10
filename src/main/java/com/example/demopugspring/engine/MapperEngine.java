@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -41,22 +42,22 @@ public class MapperEngine {
             + "ORC|SC|5926450||11959318|CA||1.000||20200709192250|270680187^Geraldes^Ines Isabel da Cunha Lima|||HOS-1C7\r"
             + "OBR|1|5926450||9000003^ECG SIMPLES||20200709192250|20200709191513||||||||||||||||||||1^^^20200709000000|||||5000305&Ramos&Sousa||||20200709191513";
 */
-    private void transcode(Terser terser, List<String> field, String system, List<MapperError> errorList) {
+    private void transcode(Terser msg, Terser tmp, List<String> field, String system, List<MapperError> errorList) {
         System.out.println("System:" + system);
         try {
             switch (system) {
                 case "ICD-10":
                     System.out.println("ICD-10");
                     System.out.println(field);
-                    terser.set(field.get(0), "1");
-                    terser.set(field.get(1), "UM");
-                    terser.set(field.get(2), "ISO");
+                    tmp.set(field.get(0), "1");
+                    tmp.set(field.get(1), "UM");
+                    tmp.set(field.get(2), "ISO");
                     break;
                 case "GH-LOCATIONS":
                     System.out.println("GH-LOCATIONS");
                     System.out.println(field);
-                    terser.set(field.get(0), "cardiology");
-                    terser.set(field.get(1), "CARDIOLOGY");
+                    tmp.set(field.get(0), "cardiology");
+                    tmp.set(field.get(1), "CARDIOLOGY");
                     break;
                 default:
                     log.error("No defined code system.");
@@ -68,7 +69,7 @@ public class MapperEngine {
         }
     }
 
-    private void mapper(Terser terser, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
+    private void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         fields.forEach(field -> {
             try {
                 if (field.contains("#")) {
@@ -84,22 +85,21 @@ public class MapperEngine {
                         }
                         log.info(fieldRep);
                         log.info(valueRep);
-                        if (terser.getSegment(fieldRep).isEmpty()) {
-                            log.info("Segmento:" + terser.getSegment(fieldRep).encode());
+                        if (msg.getSegment(fieldRep).isEmpty()) {
+                            log.info("Segmento:" + msg.getSegment(fieldRep).encode());
                             log.info("Segment is empty.");
                             break;
                         }
                         switch (type) {
                             case TEXT:
-                                terser.set(fieldRep, valueRep);
+                                tmp.set(fieldRep, valueRep);
                                 break;
                             case FIELD:
-                                terser.set(fieldRep, terser.get(valueRep));
+                                tmp.set(fieldRep, msg.get(valueRep));
                                 break;
                             case SWAP:
-                                String tmp = terser.get(fieldRep);
-                                terser.set(fieldRep, terser.get(valueRep));
-                                terser.set(valueRep, tmp);
+                                tmp.set(fieldRep, msg.get(valueRep));
+                                tmp.set(valueRep, msg.get(fieldRep));
                                 break;
                             default:
                                 log.error("No defined Category");
@@ -111,15 +111,30 @@ public class MapperEngine {
                     log.info("No # on field - just a simple map");
                     switch (type) {
                         case TEXT:
-                            terser.set(field, value);
+                            tmp.set(field, value);
                             break;
                         case FIELD:
-                            terser.set(field, terser.get(value));
+                            tmp.set(field, msg.get(value));
                             break;
                         case SWAP:
-                            String tmp = terser.get(field);
-                            terser.set(field, terser.get(value));
-                            terser.set(value, tmp);
+                            tmp.set(field, msg.get(value));
+                            tmp.set(value, msg.get(field));
+                            break;
+                        case SEGMENT:
+                            tmp.getSegment(field).parse(field);
+                            break;
+                        case JOIN:
+                            StringBuilder joined = new StringBuilder();
+                            log.info("Fields to join:" + value);
+                            for (String val : value.split(",")) {
+                                log.info("Value for " + val + ":" + msg.get(val));
+                                joined.append(msg.get(val));
+                            }
+                            log.info("joined fields:" + joined.toString());
+                            tmp.set(field, joined.toString());
+                            break;
+                        case NUMERIC:
+                            tmp.set(field, msg.get(field).replaceAll("[^\\d.]", ""));
                             break;
                         default:
                             log.error("No defined category");
@@ -133,21 +148,23 @@ public class MapperEngine {
         });
     }
 
-    public Response run(String msg) {
+    public Response run(String incomingMessage) {
         String result = "";
         Response response = new Response();
         List<MapperError> errorList = new ArrayList<>();
         HapiContext context = ContextSingleton.getInstance();
         PipeParser parser = context.getPipeParser();
         try {
-            Message message = parser.parse(msg);
+            Message message = parser.parse(incomingMessage);
+            Message outMessage = parser.parse(incomingMessage);
             log.info(message.encode());
-            Terser terser = new Terser(message);
-            String messageCode = terser.get("MSH-9-1");
-            String messageEvent = terser.get("MSH-9-2");
-            String sendingApp = terser.get("MSH-3-1");
-            String receivingApp = terser.get("MSH-5-1");
-            log.info("PV1-2:" + terser.get(".PV1-2"));
+            Terser msg = new Terser(message);
+            Terser tmp = new Terser(outMessage);
+            String messageCode = msg.get("MSH-9-1");
+            String messageEvent = msg.get("MSH-9-2");
+            String sendingApp = msg.get("MSH-3-1");
+            String receivingApp = msg.get("MSH-5-1");
+            log.info("PV1-2:" + msg.get(".PV1-2"));
 
             Integration integration = integrationService.findByMessageAndApplications(
                     messageService.findByCodeAndEvent(messageCode, messageEvent),
@@ -164,17 +181,20 @@ public class MapperEngine {
                     case TEXT:
                     case FIELD:
                     case SWAP:
+                    case SEGMENT:
+                    case JOIN:
+                    case NUMERIC:
                         log.info("TEXT or FIELD");
-                        mapper(terser, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
+                        mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
                         break;
                     case TRANSCODING:
-                        transcode(terser, mapper.getKey(), mapper.getValue(), errorList);
+                        transcode(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
                         break;
                     default:
                         errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapper.getCategory()));
                 }
             }
-            result = message.encode();
+            result = outMessage.encode();
             log.info(result);
         } catch (HL7Exception ex) {
             log.error(ex.getMessage());

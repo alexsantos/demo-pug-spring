@@ -19,7 +19,10 @@ public class Mapper {
         TEXT("text"),
         FIELD("field"),
         SWAP("swap"),
-        TRANSCODING("transcoding");
+        TRANSCODING("transcoding"),
+        SEGMENT("segment"),
+        JOIN("join"),
+        NUMERIC("numeric");
 
         private final String value;
 

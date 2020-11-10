@@ -23,7 +23,7 @@ html(lang="en")
             input(type="text" id="value" name="value" value=mapper.value)
             label(for="category") Category
             select(id="category" name="category")
-              each val in ["TEXT", "FIELD", "TRANSCODING", "SWAP"]
+              each val in ["TEXT", "FIELD", "TRANSCODING", "SWAP", "SEGMENT", "JOIN", "NUMERIC"]
                 if (val == mapper.category)
                   option(selected)= val
                 else
