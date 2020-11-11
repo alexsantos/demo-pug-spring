@@ -2,7 +2,9 @@ package com.example.demopugspring.engine;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
+import ca.uhn.hl7v2.model.GenericMessage;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.parser.GenericModelClassFactory;
 import ca.uhn.hl7v2.parser.PipeParser;
 import ca.uhn.hl7v2.util.Terser;
 import com.example.demopugspring.controller.IntegrationRestController;
@@ -156,8 +158,10 @@ public class MapperEngine {
         PipeParser parser = context.getPipeParser();
         try {
             Message message = parser.parse(incomingMessage);
-            Message outMessage = parser.parse(incomingMessage);
-            log.info(message.encode());
+            Message outMessage = new GenericMessage.V251(new GenericModelClassFactory());
+            outMessage.parse(incomingMessage);
+            //Message outMessage = parser.parse(incomingMessage);
+            log.info("Incoming message version:" + message.getVersion());
             Terser msg = new Terser(message);
             Terser tmp = new Terser(outMessage);
             String messageCode = msg.get("MSH-9-1");
@@ -175,6 +179,7 @@ public class MapperEngine {
                         " and sending application " + sendingApp + " and receiving application " + receivingApp);
             }
             log.info("Integration:" + integration.getMappers().toString());
+            // Change message version
 
             for (Mapper mapper : integration.getMappers()) {
                 switch (mapper.getCategory()) {
@@ -194,6 +199,7 @@ public class MapperEngine {
                         errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapper.getCategory()));
                 }
             }
+            log.info("Out message version:" + outMessage.getVersion());
             result = outMessage.encode();
             log.info(result);
         } catch (HL7Exception ex) {
