@@ -29,7 +29,7 @@ public class DemoPugSpringApplication {
 
 
 
-    @Bean
+    /*@Bean
     public CommandLineRunner loadApplications(ApplicationService applicationService,
                                               MessageService messageService,
                                               MapperService mapperService,
@@ -93,7 +93,7 @@ public class DemoPugSpringApplication {
             }
             logger.info("");
         };
-    }
+    }*/
 
 
 

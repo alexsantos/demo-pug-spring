@@ -1,12 +1,3 @@
--
-  var fields = {
-    "legend": "Create a new application",
-    "values": [
-      {"id": "code", "name": "code", "label": "Code", "type": "input"},
-      {"id": "name", "name": "name", "label": "Name", "type": "input"}
-    ]
-  }
-
 doctype
 html(lang="en")
   include ../includes/header
@@ -21,6 +12,10 @@ html(lang="en")
         .content
           form.pure-form.pure-form-stacked(name="application" action="/applications/create" method="POST")
             fieldset
-              include ../includes/fieldset
-              +fieldset(fields)
+              legend Create a new application
+              label(for="code") Code
+              input(type="text" id="code" name="code")
+              label(for="name") Name
+              input(type="text" id="name" name="name")
+              button.pure-button.pure-button-primary(type="submit") Create
   include ../includes/footer
