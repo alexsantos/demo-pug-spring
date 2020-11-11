@@ -34,7 +34,7 @@ public class MessageController {
     public String showAddMessage(Model model) {
         Message message = new Message();
         model.addAttribute("message", message);
-        return "/messages/create";
+        return "messages/create";
     }
 
     @PostMapping(value = "/messages/create")
@@ -51,7 +51,7 @@ public class MessageController {
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("add", true);
-            return "/messages";
+            return "messages/index";
         }
     }
 }

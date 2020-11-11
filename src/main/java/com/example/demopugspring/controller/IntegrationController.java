@@ -52,7 +52,7 @@ public class IntegrationController {
     public String showAddIntegration(Model model) {
         model.addAttribute("messages", messageService.findAll());
         model.addAttribute("applications", applicationService.findAll());
-        return "/integrations/create";
+        return "integrations/create";
     }
 
     @PostMapping(value = "/integrations/create")
@@ -68,7 +68,7 @@ public class IntegrationController {
             String errorMessage = ex.getMessage();
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
-            return "/integrations";
+            return "integrations/index";
         }
     }
 
@@ -88,7 +88,7 @@ public class IntegrationController {
             String errorMessage = ex.getMessage();
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
-            return "/integrations/".concat(String.valueOf(id));
+            return "integrations/".concat(String.valueOf(id));
         }
     }
 }

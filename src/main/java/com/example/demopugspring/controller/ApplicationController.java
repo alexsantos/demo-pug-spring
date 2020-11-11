@@ -23,21 +23,14 @@ public class ApplicationController {
     public String getApps(Model model) {
         List<Application> applications = applicationService.findAll();
         model.addAttribute("applications", applications);
-        return "/applications/index";
-    }
-
-    @GetMapping(value = "/applications/{id}")
-    public String getApp(Model model, @PathVariable(name = "id") Long id) {
-        Application application = applicationService.findById(id);
-        model.addAttribute("application", application);
-        return "application";
+        return "applications/index";
     }
 
     @GetMapping(value = {"/applications/edit"})
     public String showEditApp(Model model, @RequestParam("id") Long id) {
         Application application = applicationService.findById(id);
         model.addAttribute("application", application);
-        return "/applications/edit";
+        return "applications/edit";
     }
 
     @PostMapping(value = "/applications/edit")
@@ -53,7 +46,7 @@ public class ApplicationController {
             String errorMessage = ex.getMessage();
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
-            return "/applications";
+            return "applications/index";
         }
     }
 
@@ -62,7 +55,7 @@ public class ApplicationController {
         Application application = new Application();
         model.addAttribute("add", true);
         model.addAttribute("application", application);
-        return "/applications/create";
+        return "applications/create";
     }
 
     @PostMapping(value = "/applications/create")
@@ -79,7 +72,7 @@ public class ApplicationController {
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("add", true);
-            return "/applications";
+            return "applications/index";
         }
     }
 }

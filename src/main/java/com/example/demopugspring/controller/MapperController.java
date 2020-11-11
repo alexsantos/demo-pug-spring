@@ -33,7 +33,7 @@ public class MapperController {
     public String showAddMapper(Model model) {
         Mapper mapper = new Mapper();
         model.addAttribute("mapper", mapper);
-        return "/mappers/create";
+        return "mappers/create";
     }
 
     @PostMapping(value = {"/mappers/create", "/mappers/update"})
@@ -50,7 +50,7 @@ public class MapperController {
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("add", true);
-            return "/mappers";
+            return "mappers/index";
         }
     }
 
@@ -59,7 +59,7 @@ public class MapperController {
                                     @RequestParam("id") Long id) {
         Mapper mapper = mapperService.findById(id);
         model.addAttribute("mapper", mapper);
-        return "/mappers/edit";
+        return "mappers/edit";
     }
 
 }
