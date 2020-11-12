@@ -1,0 +1,229 @@
+//Release Faceade Jenkins
+def get_branch_type(String branch_name) {
+    //Must be specified according to <flowInitContext> configuration of jgitflow-maven-plugin in pom.xml
+    def dev_pattern = ".*develop"
+    def release_pattern = ".*release/.*"
+    def feature_pattern = ".*feature/.*"
+    def hotfix_pattern = ".*hotfix/.*"
+    def master_pattern = ".*master"
+    if (branch_name =~ dev_pattern) {
+        return "develop"
+    } else if (branch_name =~ release_pattern) {
+        return "release"
+    } else if (branch_name =~ master_pattern) {
+        return "master"
+    } else if (branch_name =~ feature_pattern) {
+        return "feature"
+    } else if (branch_name =~ hotfix_pattern) {
+        return "hotfix"
+    } else {
+        return null;
+    }
+}
+
+def getRegistryName(String branch_name) {
+    def dev_pattern = ".*develop"
+    def release_pattern = ".*release/.*"
+    def feature_pattern = ".*feature/.*"
+    def hotfix_pattern = ".*hotfix/.*"
+    def master_pattern = ".*master"
+    if (branch_name =~ dev_pattern) {
+        return "eu.gcr.io/helios-qua"
+    } else if (branch_name =~ release_pattern) {
+        return "eu.gcr.io/helios-qua"
+    } else if (branch_name =~ master_pattern) {
+        return "eu.gcr.io/helios-qua"
+    } else if (branch_name =~ feature_pattern) {
+        return "eu.gcr.io/helios-qua"
+    } else if (branch_name =~ hotfix_pattern) {
+        return "eu.gcr.io/helios-qua"
+    } else {
+        return null;
+    }
+}
+def getVersion(String version, String branch_name) {
+  if (branch_name =~ ".*feature/.*") {
+      	return version.replace("SNAPSHOT",branch_name.replace("feature/",""));
+  }else if(branch_name =~ ".*hotfix/.*"){
+    	return version+"-hotfix";
+  }else{
+        return version;
+  }
+}
+
+def isReturnScript(String command){
+		return sh(script: command, returnStatus: true);
+}
+
+def getFeatureName(String branch_name) {
+	return branch_name.replace("feature/","");
+}
+
+def getBranchAsCode(String branch_name) {
+	return branch_name.replace("/","%2F");
+}
+pipeline {
+  agent { label 'master' }
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+  }
+  environment {
+    GCLOUD_PATH = "/var/jenkins_home/gcloud/google-cloud-sdk/bin"
+    PROJECT_NAME = "integration-java-spring-mapper"
+    JAVA_HOME ="${tool 'jdk8'}"
+   // PROJECT_GS_NAME = "gs://facade-dev-data"
+   // MACHINE_NAMES ="psit-integration-vm-facade-"
+    //JOB_CREATE_VM="featureVMfacade"
+  }
+  tools{
+    maven 'Maven-Default'
+  }
+  stages{
+    stage("read Version"){
+      steps{
+        script {
+          VERSION_POM =readMavenPom().getVersion()
+          VERSION = getVersion("${VERSION_POM}","${env.BRANCH_NAME}")
+          REGISTRY = getRegistryName("${env.BRANCH_NAME}");
+         // CREATEPSIT = readMavenPom().properties['project.build.createPsit'];
+          FEATURE_NAME = getFeatureName("${env.BRANCH_NAME}")
+          FEATURE_NAME_LOW = "${FEATURE_NAME}".toLowerCase()
+         // MIG_NAME ="${MACHINE_NAMES}"+"${FEATURE_NAME_LOW}"+"-mig"
+          //GS_NAME = "${PROJECT_GS_NAME}"+"/psit"+"${FEATURE_NAME_LOW}"
+        }
+        echo "Building feature ${FEATURE_NAME}"
+        echo "Building version ${VERSION}"
+        echo "Building in Registry ${REGISTRY}"
+        echo "Create Psit ${CREATEPSIT}"
+      }
+    }
+    stage('Configurations') {
+      parallel {
+        stage("dockerlogin tag"){
+          steps{
+            withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+              sh "cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://eu.gcr.io"
+            }
+          }
+        }
+        stage('Check Snapshots') {
+          when { anyOf {expression { get_branch_type("${env.BRANCH_NAME}")=="master" }; expression { get_branch_type("${env.BRANCH_NAME}")=="release" }}}
+          steps {
+            configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+              withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                mavenSnapshotCheck check: 'true'
+              }
+            }
+          }
+        }    
+      }
+    }
+
+    stage('Change version') {
+      when { expression { get_branch_type("${env.BRANCH_NAME}")=="feature" } }
+      steps{
+        configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+          sh "mvn -gs $MAVEN_GLOBAL_SETTINGS versions:set -X -e -DnewVersion=${VERSION}"
+        }
+      }
+    }
+
+      stage('Change version hotfix') {
+      when { expression { get_branch_type("${env.BRANCH_NAME}")=="hotfix" } }
+      steps{
+        configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+          sh "mvn -gs $MAVEN_GLOBAL_SETTINGS versions:set -X -e -DnewVersion=${VERSION}"
+        }
+      }
+    }
+    stage('Build jar') {
+      steps{
+        configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+          sh "mvn -gs $MAVEN_GLOBAL_SETTINGS package -Dmaven.test.skip=true "
+        }
+      }
+    }
+    stage("build image"){
+      steps{
+        configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+          withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+            sh "docker build --build-arg VERSION=${VERSION} -t ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+            sh "docker images"
+          }
+        }
+      }
+    }
+    stage("push image to registry"){
+      parallel {
+        stage("push image QUA"){
+          when { expression { get_branch_type("${env.BRANCH_NAME}")=="release" } }
+          steps{
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+            sh "docker tag ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} ${REGISTRY}/${env.PROJECT_NAME}:latest"
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:latest"
+          }
+        }
+        stage("push image FEATURE"){
+          when { expression { get_branch_type("${env.BRANCH_NAME}")=="feature" } }
+          steps{
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+          }
+        }
+        stage("push image DEV"){
+          when { expression { get_branch_type("${env.BRANCH_NAME}")=="develop" } }
+          steps{
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+            sh "docker tag ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} ${REGISTRY}/${env.PROJECT_NAME}:latestsnapshot"
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:latestsnapshot"
+
+          }
+        }
+        stage("push image HOTFIX"){
+          when { expression { get_branch_type("${env.BRANCH_NAME}")=="hotfix" } }
+          steps{
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+          }
+        }
+        stage("push image PROD"){
+          when { expression { get_branch_type("${env.BRANCH_NAME}")=="master" } }
+          steps{
+            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+          }
+        }
+      }
+    }
+    stage("deploy image"){
+      parallel {
+        stage("deploy image FEATURE"){
+          when { allOf {expression { get_branch_type("${env.BRANCH_NAME}")=="feature"};  expression {"${CREATEPSIT}"=="true" }} }
+          steps{
+            withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+              //  sh "gsutil rsync -d -r ./resources/ ${GS_NAME}/data/resources/ "
+              //  sh "gcloud compute instance-groups managed rolling-action restart --zone \"europe-west4-a\" \"${MIG_NAME}\" --project helios-qua"
+            }
+          }
+        }
+      }
+    }
+    stage('Clean and create'){
+      parallel {
+        stage("Create machine"){
+          when { allOf{ expression { isReturnScript("gsutil -q stat ${GS_NAME}" + "/startupScript.sh")==1}; expression { get_branch_type("${env.BRANCH_NAME}")=="feature"} ; expression {"${CREATEPSIT}"=="true" }}}
+          steps{
+            build job: "${env.JOB_CREATE_VM}", parameters: [string(name: 'SOURCE_PROJECT_NAME', value: getBranchAsCode("${env.BRANCH_NAME}")), string(name: 'SOURCE_PROJECT_FULL_NAME', value: '')]
+          }
+        }
+        stage("docker clean"){
+          steps{
+            sh "docker rmi ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+          }
+        }
+      }
+    }
+  }
+  post{
+    always{
+      cleanWs()
+    }
+  }
+}
