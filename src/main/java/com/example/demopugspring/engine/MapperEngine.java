@@ -158,9 +158,9 @@ public class MapperEngine {
         PipeParser parser = context.getPipeParser();
         try {
             Message message = parser.parse(incomingMessage);
-            Message outMessage = new GenericMessage.V251(new GenericModelClassFactory());
-            outMessage.parse(incomingMessage);
-            //Message outMessage = parser.parse(incomingMessage);
+            //Message outMessage = new GenericMessage.V251(new GenericModelClassFactory());
+            //outMessage.parse(incomingMessage);
+            Message outMessage = parser.parse(incomingMessage);
             log.info("Incoming message version:" + message.getVersion());
             Terser msg = new Terser(message);
             Terser tmp = new Terser(outMessage);
