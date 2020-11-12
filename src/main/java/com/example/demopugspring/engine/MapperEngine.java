@@ -1,32 +1,40 @@
 package com.example.demopugspring.engine;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.model.GenericMessage;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.parser.GenericModelClassFactory;
-import ca.uhn.hl7v2.parser.PipeParser;
-import ca.uhn.hl7v2.util.Terser;
-import com.example.demopugspring.controller.IntegrationRestController;
-import com.example.demopugspring.factory.ContextSingleton;
-import com.example.demopugspring.model.Integration;
-import com.example.demopugspring.model.Mapper;
-import com.example.demopugspring.service.ApplicationService;
-import com.example.demopugspring.service.IntegrationService;
-import com.example.demopugspring.service.MessageService;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.example.demopugspring.controller.IntegrationRestController;
+import com.example.demopugspring.factory.ContextSingleton;
+import com.example.demopugspring.model.Integration;
+import com.example.demopugspring.model.Mapper;
+import com.example.demopugspring.properties.CodesInterface;
+import com.example.demopugspring.properties.CountryCodes;
+import com.example.demopugspring.properties.FacilitiesCodes;
+import com.example.demopugspring.service.ApplicationService;
+import com.example.demopugspring.service.IntegrationService;
+import com.example.demopugspring.service.MessageService;
+
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.HapiContext;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.parser.PipeParser;
+import ca.uhn.hl7v2.util.Terser;
 
 @Service
 public class MapperEngine {
 
     private static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
+
+	@Autowired
+	FacilitiesCodes facilitiesCodes;
+
+	@Autowired
+	CountryCodes countryCodes;
 
     @Autowired
     IntegrationService integrationService;
@@ -44,32 +52,39 @@ public class MapperEngine {
             + "ORC|SC|5926450||11959318|CA||1.000||20200709192250|270680187^Geraldes^Ines Isabel da Cunha Lima|||HOS-1C7\r"
             + "OBR|1|5926450||9000003^ECG SIMPLES||20200709192250|20200709191513||||||||||||||||||||1^^^20200709000000|||||5000305&Ramos&Sousa||||20200709191513";
 */
-    private void transcode(Terser msg, Terser tmp, List<String> field, String system, List<MapperError> errorList) {
+	private void transcode(Terser msg, Terser tmp, List<String> fields, String system, List<MapperError> errorList) {
         System.out.println("System:" + system);
         try {
+
             switch (system) {
                 case "ICD-10":
                     System.out.println("ICD-10");
-                    System.out.println(field);
-                    tmp.set(field.get(0), "1");
-                    tmp.set(field.get(1), "UM");
-                    tmp.set(field.get(2), "ISO");
+					System.out.println(fields);
+					tmp.set(fields.get(0), "1");
+					tmp.set(fields.get(1), "UM");
+					tmp.set(fields.get(2), "ISO");
                     break;
                 case "GH-LOCATIONS":
-                    System.out.println("GH-LOCATIONS");
-                    System.out.println(field);
-                    tmp.set(field.get(0), "cardiology");
-                    tmp.set(field.get(1), "CARDIOLOGY");
+					decodeFieldsCodes(fields, countryCodes, msg, tmp);
                     break;
+				case "FACILITIES":
+					decodeFieldsCodes(fields, facilitiesCodes, msg, tmp);
+					break;
                 default:
                     log.error("No defined code system.");
-                    errorList.add(new MapperError(field.toString(),"No defined code system: " + system));
+					errorList.add(new MapperError(fields.toString(), "No defined code system: " + system));
             }
         } catch (HL7Exception ex) {
             log.error(ex.getMessage());
-            errorList.add(new MapperError(field.toString(), ex.getMessage()));
+			errorList.add(new MapperError(fields.toString(), ex.getMessage()));
         }
     }
+
+	private void decodeFieldsCodes(List<String> fields, CodesInterface codeInterface, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
+		for (String field : fields) {
+			decodedMessage.set(field, codeInterface.getDecodeCode(encodedMessage.get(field)));
+		}
+	}
 
     private void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         fields.forEach(field -> {
@@ -100,8 +115,8 @@ public class MapperEngine {
                                 tmp.set(fieldRep, msg.get(valueRep));
                                 break;
                             case SWAP:
-                                tmp.set(fieldRep, msg.get(valueRep));
-                                tmp.set(valueRep, msg.get(fieldRep));
+							    tmp.set(fieldRep, msg.get(valueRep));
+							    tmp.set(valueRep, msg.get(fieldRep));
                                 break;
                             default:
                                 log.error("No defined Category");
@@ -119,8 +134,8 @@ public class MapperEngine {
                             tmp.set(field, msg.get(value));
                             break;
                         case SWAP:
-                            tmp.set(field, msg.get(value));
-                            tmp.set(value, msg.get(field));
+						    tmp.set(field, msg.get(value));
+						    tmp.set(value, msg.get(field));
                             break;
                         case SEGMENT:
                             tmp.getSegment(field).parse(field);
@@ -149,6 +164,16 @@ public class MapperEngine {
             }
         });
     }
+
+	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
+		String firstValue, secondValue;
+		for (String field : fields) {
+			firstValue = tmp.get(value);
+			secondValue = tmp.get(field);
+			tmp.set(field, firstValue);
+			tmp.set(value, secondValue);
+		}
+	}
 
     public Response run(String incomingMessage) {
         String result = "";
@@ -192,6 +217,9 @@ public class MapperEngine {
                         log.info("TEXT or FIELD");
                         mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
                         break;
+					case AFTER_SWAP:
+						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
+						break;
                     case TRANSCODING:
                         transcode(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
                         break;

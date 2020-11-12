@@ -1,12 +1,17 @@
 package com.example.demopugspring.model;
 
+import java.util.List;
+
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
@@ -22,7 +27,8 @@ public class Mapper {
         TRANSCODING("transcoding"),
         SEGMENT("segment"),
         JOIN("join"),
-        NUMERIC("numeric");
+			NUMERIC("numeric"),
+			AFTER_SWAP("after_swap");
 
         private final String value;
 
