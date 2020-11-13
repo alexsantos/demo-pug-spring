@@ -3,6 +3,7 @@ package com.example.demopugspring.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,11 +91,16 @@ public class MapperEngine {
         fields.forEach(field -> {
             try {
                 if (field.contains("#")) {
-                    log.info("Contains # - loop all segments/fields");
-                    int i = 0;
-                    while (true) {
+					boolean toContinue = true;
+					log.info("Contains # - loop all segments/fields");
+
+
+					int i = 1;
+					while (toContinue) {
+
                         var fieldRep = field.replace("#", String.valueOf(i));
-                        var valueRep = "";
+                        
+						var valueRep = value;
                         if (value.equals("#")) {
                             valueRep = String.valueOf(i + 1);
                         } else if (type == Mapper.Category.FIELD) {
@@ -102,17 +108,13 @@ public class MapperEngine {
                         }
                         log.info(fieldRep);
                         log.info(valueRep);
-                        if (msg.getSegment(fieldRep).isEmpty()) {
-                            log.info("Segmento:" + msg.getSegment(fieldRep).encode());
-                            log.info("Segment is empty.");
-                            break;
-                        }
+
                         switch (type) {
                             case TEXT:
                                 tmp.set(fieldRep, valueRep);
                                 break;
                             case FIELD:
-                                tmp.set(fieldRep, msg.get(valueRep));
+							tmp.set(fieldRep, msg.get(valueRep));
                                 break;
                             case SWAP:
 							    tmp.set(fieldRep, msg.get(valueRep));
@@ -121,8 +123,9 @@ public class MapperEngine {
                             default:
                                 log.error("No defined Category");
                                 errorList.add(new MapperError(field, "No Category defined as: " + type));
-                        }
+                        	}
                         i++;
+						break;
                     }
                 } else {
                     log.info("No # on field - just a simple map");
@@ -131,7 +134,7 @@ public class MapperEngine {
                             tmp.set(field, value);
                             break;
 					case FIELD:
-                            tmp.set(field, msg.get(value));
+						    tmp.set(field, msg.get(value));
                             break;
                         case SWAP:
 						    tmp.set(field, msg.get(value));
@@ -178,6 +181,11 @@ public class MapperEngine {
 		}
 	}
 
+	private void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
+		for (String field : fields) {
+			tmp.set(field, tmp.get(value));
+		}
+	}
 
 	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
 		StringBuffer listContactsHome = new StringBuffer();
@@ -245,6 +253,8 @@ public class MapperEngine {
                         log.info("TEXT or FIELD");
                         mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
                         break;
+					case AFTER_FIELD:
+						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 					case AFTER_SWAP:
 						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
