@@ -126,21 +126,21 @@ public class MapperEngine {
                     }
                 } else {
                     log.info("No # on field - just a simple map");
-                    switch (type) {
-                        case TEXT:
+					switch (type) {
+					case TEXT:
                             tmp.set(field, value);
                             break;
-                        case FIELD:
+					case FIELD:
                             tmp.set(field, msg.get(value));
                             break;
                         case SWAP:
 						    tmp.set(field, msg.get(value));
 						    tmp.set(value, msg.get(field));
                             break;
-                        case SEGMENT:
+					case SEGMENT:
                             tmp.getSegment(field).parse(field);
                             break;
-                        case JOIN:
+					case JOIN:
                             StringBuilder joined = new StringBuilder();
                             log.info("Fields to join:" + value);
                             for (String val : value.split(",")) {
@@ -150,12 +150,15 @@ public class MapperEngine {
                             log.info("joined fields:" + joined.toString());
                             tmp.set(field, joined.toString());
                             break;
-                        case NUMERIC:
+					case NUMERIC:
                             tmp.set(field, msg.get(field).replaceAll("[^\\d.]", ""));
                             break;
-                        default:
-                            log.error("No defined category");
-                            errorList.add(new MapperError(field, "No Category defined as " + type));
+					case CONTACT:
+						addRepetitions(tmp, tmp.get("PID-13-12-1"), tmp.get("PID-14-7-1"), tmp.get("PID-13-4"));
+						break;
+					default:
+						log.error("No defined category");
+						errorList.add(new MapperError(field, "No Category defined as " + type));
                     }
                 }
             } catch (HL7Exception ex) {
@@ -175,7 +178,31 @@ public class MapperEngine {
 		}
 	}
 
-    public Response run(String incomingMessage) {
+
+	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
+		StringBuffer listContactsHome = new StringBuffer();
+		int i=0;
+		for (String s : strings) {
+			if (StringUtils.isEmpty(s)) {
+				continue;
+			}
+			boolean isPhone = s.matches("[\\d]+");
+			if (isPhone) {
+				tmp.set("PID-13("+i+")-3", "PH");
+				tmp.set("PID-13("+i+")-12", s);
+				tmp.set("PID-13(" + i + ")-4", "");
+			} else {
+				tmp.set("PID-13("+i+")-3", "X.400");
+				tmp.set("PID-13(" + i + ")-4", s);
+				tmp.set("PID-13(" + i + ")-12", "");
+			}
+			tmp.set("PID-14(" + i + ")-7", "");
+
+			i++;
+		}
+	}
+
+	public Response run(String incomingMessage) {
         String result = "";
         Response response = new Response();
         List<MapperError> errorList = new ArrayList<>();
@@ -214,6 +241,7 @@ public class MapperEngine {
                     case SEGMENT:
                     case JOIN:
                     case NUMERIC:
+					case CONTACT:
                         log.info("TEXT or FIELD");
                         mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
                         break;

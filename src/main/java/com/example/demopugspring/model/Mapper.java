@@ -27,7 +27,8 @@ public class Mapper {
         TRANSCODING("transcoding"),
         SEGMENT("segment"),
         JOIN("join"),
-			NUMERIC("numeric"),
+            NUMERIC("numeric"),
+            CONTACT("contact"),
 			AFTER_SWAP("after_swap");
 
         private final String value;
