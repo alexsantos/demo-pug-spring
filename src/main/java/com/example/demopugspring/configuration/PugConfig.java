@@ -12,13 +12,13 @@ import de.neuland.pug4j.template.TemplateLoader;
 
 @Configuration
 public class PugConfig {
-	private static boolean ISWINDOWS = true;
+	private static boolean ISWINDOWS = false;
 
 	@Bean
 	public TemplateLoader templateLoader() {
 		JmsTemplateLoader templateLoader = new JmsTemplateLoader();
-		templateLoader.setTemplateLoaderPath(Paths.get("./src/main/resources/templates/").toAbsolutePath().toString());
-		// templateLoader.setTemplateLoaderPath("classpath:/templates/");
+		//templateLoader.setTemplateLoaderPath(Paths.get("./src/main/resources/templates/").toAbsolutePath().toString());
+		 templateLoader.setTemplateLoaderPath("classpath:/templates/");
 		templateLoader.setSearchFile(ISWINDOWS);
 		templateLoader.setEncoding("UTF-8");
 		templateLoader.setSuffix(".pug");

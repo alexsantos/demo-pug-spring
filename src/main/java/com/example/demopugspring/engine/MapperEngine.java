@@ -217,9 +217,14 @@ public class MapperEngine {
         HapiContext context = ContextSingleton.getInstance();
         PipeParser parser = context.getPipeParser();
         try {
-            Message message = parser.parse(incomingMessage);
+
             //Message outMessage = new GenericMessage.V251(new GenericModelClassFactory());
             //outMessage.parse(incomingMessage);
+            // Transforming the string before parsing to a HL7v2 Message
+            incomingMessage
+                    .replace("PDF_BASE64", "ED")
+                    .replace("|JVBER", "|^^^^JVBER");
+            Message message = parser.parse(incomingMessage);
             Message outMessage = parser.parse(incomingMessage);
             log.info("Incoming message version:" + message.getVersion());
             Terser msg = new Terser(message);
