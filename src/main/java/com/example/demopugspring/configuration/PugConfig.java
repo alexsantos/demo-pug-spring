@@ -1,12 +1,11 @@
 package com.example.demopugspring.configuration;
 
-import java.nio.file.Paths;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.ViewResolver;
 
 import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.spring.template.SpringTemplateLoader;
 import de.neuland.pug4j.spring.view.PugViewResolver;
 import de.neuland.pug4j.template.TemplateLoader;
 
@@ -16,10 +15,11 @@ public class PugConfig {
 
 	@Bean
 	public TemplateLoader templateLoader() {
-		JmsTemplateLoader templateLoader = new JmsTemplateLoader();
-		//templateLoader.setTemplateLoaderPath(Paths.get("./src/main/resources/templates/").toAbsolutePath().toString());
-		 templateLoader.setTemplateLoaderPath("classpath:/templates/");
-		templateLoader.setSearchFile(ISWINDOWS);
+		// JmsTemplateLoader templateLoader = new JmsTemplateLoader();
+		SpringTemplateLoader templateLoader = new SpringTemplateLoader();
+		// templateLoader.setTemplateLoaderPath(Paths.get("./src/main/resources/templates/").toAbsolutePath().toString());
+		templateLoader.setTemplateLoaderPath("classpath:/templates/");
+		// templateLoader.setSearchFile(ISWINDOWS);
 		templateLoader.setEncoding("UTF-8");
 		templateLoader.setSuffix(".pug");
 		return templateLoader;
