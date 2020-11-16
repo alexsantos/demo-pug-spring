@@ -157,7 +157,7 @@ public class MapperEngine {
                             tmp.set(field, msg.get(field).replaceAll("[^\\d.]", ""));
                             break;
 					case CONTACT:
-						addRepetitions(tmp, field, tmp.get("PID-13-12-1"), tmp.get("PID-14-7-1"), tmp.get("PID-13-4"));
+						addRepetitions(tmp, field, tmp.get(field + "-13-7-1"), tmp.get(field + "-13-12-1"), tmp.get(field + "-14-7-1"), tmp.get(field + "-14-7-1"), tmp.get(field + "-13-04"));
 						break;
 
 					default:
@@ -191,6 +191,7 @@ public class MapperEngine {
 	public void addRepetitions(Terser tmp, String field, String... strings) throws HL7Exception {
 		StringBuffer listContactsHome = new StringBuffer();
 		int i=0;
+
 		for (String s : strings) {
 			if (StringUtils.isEmpty(s)) {
 				continue;
@@ -198,14 +199,18 @@ public class MapperEngine {
 			boolean isPhone = s.matches("[\\d]+");
 			if (isPhone) {
 				tmp.set(field + "-13(" + i + ")-3", "PH");
+				// System.out.println(field + "-13(" + i + ")-3");
+				// System.out.println(tmp.get("PID" + "-13(0)-7"));
 				tmp.set(field + "-13(" + i + ")-12", s);
 				tmp.set(field + "-13(" + i + ")-4", "");
+				tmp.set(field + "-13(" + i + ")-7", "");
+
 			} else {
-				tmp.set(field + "(" + i + ")-3", "X.400");
+				tmp.set(field + "-13(" + i + ")-3", "X.400");
 				tmp.set(field + "-13(" + i + ")-4", s);
 				tmp.set(field + "-13(" + i + ")-12", "");
 			}
-			tmp.set(field + "-14(" + i + ")-7", "");
+			tmp.set(field + "-14-7", "");
 
 			i++;
 		}
