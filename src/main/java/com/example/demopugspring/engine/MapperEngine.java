@@ -157,8 +157,9 @@ public class MapperEngine {
                             tmp.set(field, msg.get(field).replaceAll("[^\\d.]", ""));
                             break;
 					case CONTACT:
-						addRepetitions(tmp, tmp.get("PID-13-12-1"), tmp.get("PID-14-7-1"), tmp.get("PID-13-4"));
+						addRepetitions(tmp, field, tmp.get("PID-13-12-1"), tmp.get("PID-14-7-1"), tmp.get("PID-13-4"));
 						break;
+
 					default:
 						log.error("No defined category");
 						errorList.add(new MapperError(field, "No Category defined as " + type));
@@ -187,7 +188,7 @@ public class MapperEngine {
 		}
 	}
 
-	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
+	public void addRepetitions(Terser tmp, String field, String... strings) throws HL7Exception {
 		StringBuffer listContactsHome = new StringBuffer();
 		int i=0;
 		for (String s : strings) {
@@ -196,15 +197,15 @@ public class MapperEngine {
 			}
 			boolean isPhone = s.matches("[\\d]+");
 			if (isPhone) {
-				tmp.set("PID-13("+i+")-3", "PH");
-				tmp.set("PID-13("+i+")-12", s);
-				tmp.set("PID-13(" + i + ")-4", "");
+				tmp.set(field + "-13(" + i + ")-3", "PH");
+				tmp.set(field + "-13(" + i + ")-12", s);
+				tmp.set(field + "-13(" + i + ")-4", "");
 			} else {
-				tmp.set("PID-13("+i+")-3", "X.400");
-				tmp.set("PID-13(" + i + ")-4", s);
-				tmp.set("PID-13(" + i + ")-12", "");
+				tmp.set(field + "(" + i + ")-3", "X.400");
+				tmp.set(field + "-13(" + i + ")-4", s);
+				tmp.set(field + "-13(" + i + ")-12", "");
 			}
-			tmp.set("PID-14(" + i + ")-7", "");
+			tmp.set(field + "-14(" + i + ")-7", "");
 
 			i++;
 		}
