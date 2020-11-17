@@ -1,6 +1,4 @@
-package com.example.demoplugspring.visitor;
-
-import org.springframework.stereotype.Service;
+package com.example.demopugspring.visitor;
 
 import com.example.demopugspring.properties.CodesInterface;
 
@@ -8,7 +6,7 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.Location;
 import ca.uhn.hl7v2.model.Primitive;
 
-@Service
+
 public class TranscodingOperationVisitor extends MapperVisitor {
 	
 	CodesInterface codeInterface;

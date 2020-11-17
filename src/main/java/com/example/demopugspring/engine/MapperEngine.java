@@ -9,18 +9,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demoplugspring.visitor.MapperVisitor;
-import com.example.demoplugspring.visitor.TranscodingOperationVisitor;
 import com.example.demopugspring.controller.IntegrationRestController;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
+import com.example.demopugspring.operation.FieldOperation;
+import com.example.demopugspring.operation.SwapOperation;
 import com.example.demopugspring.properties.CodesInterface;
 import com.example.demopugspring.properties.CountryCodes;
 import com.example.demopugspring.properties.FacilitiesCodes;
+import com.example.demopugspring.properties.IdentificationCodes;
 import com.example.demopugspring.service.ApplicationService;
 import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MessageService;
+import com.example.demopugspring.visitor.MapperVisitor;
+import com.example.demopugspring.visitor.TranscodingOperationVisitor;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
@@ -33,6 +36,8 @@ public class MapperEngine {
 
     private static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
     
+    @Autowired
+    IdentificationCodes identificationCodes;
     @Autowired
     FacilitiesCodes facilitiesCodes;
     @Autowired
@@ -76,6 +81,9 @@ public class MapperEngine {
 				break;
 			case "GH-LOCATIONS":
 				codeInterface = countryCodes;
+				break;
+			case "IDENTIFICATIONS":
+				codeInterface = identificationCodes;
 				break;
 			default:
 				throw new HL7Exception("Transcode propperty it's incorrect.");
@@ -188,19 +196,14 @@ public class MapperEngine {
     }
 
 	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
-		String firstValue, secondValue;
-		for (String field : fields) {
-			firstValue = tmp.get(value);
-			secondValue = tmp.get(field);
-			tmp.set(field, firstValue);
-			tmp.set(value, secondValue);
-		}
+		SwapOperation swapOperation = new SwapOperation(value, fields);
+		swapOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
 	}
 
 	private void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
-		for (String field : fields) {
-			tmp.set(field, tmp.get(value));
-		}
+		FieldOperation fieldOperation = new FieldOperation(value, fields);
+		fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
+		
 	}
 
 	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
@@ -271,6 +274,7 @@ public class MapperEngine {
                         break;
 					case AFTER_FIELD:
 						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
+						break;
 					case AFTER_SWAP:
 						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
