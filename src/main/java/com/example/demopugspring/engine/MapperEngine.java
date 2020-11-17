@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demoplugspring.visitor.MapperVisitor;
+import com.example.demoplugspring.visitor.TranscodingOperationVisitor;
 import com.example.demopugspring.controller.IntegrationRestController;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.model.Integration;
@@ -30,13 +32,11 @@ import ca.uhn.hl7v2.util.Terser;
 public class MapperEngine {
 
     private static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
-
-	@Autowired
-	FacilitiesCodes facilitiesCodes;
-
-	@Autowired
-	CountryCodes countryCodes;
-
+    
+    @Autowired
+    FacilitiesCodes facilitiesCodes;
+    @Autowired
+    CountryCodes countryCodes;
     @Autowired
     IntegrationService integrationService;
     @Autowired
@@ -53,49 +53,60 @@ public class MapperEngine {
             + "ORC|SC|5926450||11959318|CA||1.000||20200709192250|270680187^Geraldes^Ines Isabel da Cunha Lima|||HOS-1C7\r"
             + "OBR|1|5926450||9000003^ECG SIMPLES||20200709192250|20200709191513||||||||||||||||||||1^^^20200709000000|||||5000305&Ramos&Sousa||||20200709191513";
 */
-	private void transcode(Terser msg, Terser tmp, List<String> fields, String system, List<MapperError> errorList) {
-        System.out.println("System:" + system);
-        try {
 
-            switch (system) {
-                case "ICD-10":
-                    System.out.println("ICD-10");
-					System.out.println(fields);
-					tmp.set(fields.get(0), "1");
-					tmp.set(fields.get(1), "UM");
-					tmp.set(fields.get(2), "ISO");
-                    break;
-                case "GH-LOCATIONS":
-					decodeFieldsCodes(fields, countryCodes, msg, tmp);
-                    break;
-				case "FACILITIES":
-					decodeFieldsCodes(fields, facilitiesCodes, msg, tmp);
-					break;
-                default:
-                    log.error("No defined code system.");
-					errorList.add(new MapperError(fields.toString(), "No defined code system: " + system));
-            }
-        } catch (HL7Exception ex) {
-            log.error(ex.getMessage());
-			errorList.add(new MapperError(fields.toString(), ex.getMessage()));
-        }
-    }
 
-	private void decodeFieldsCodes(List<String> fields, CodesInterface codeInterface, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
-		for (String field : fields) {
-			decodedMessage.set(field, codeInterface.getDecodeCode(encodedMessage.get(field)));
-		}
+	
+	
+	private void textFields(String field, String text, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
+		MapperVisitor visitor;
+
+		visitor =  new MapperVisitor(field,  text);
+		visitor.start(decodedMessage.getSegment(field.split("-")[0]).getMessage());
+	
 	}
+	
 
+	public void transcode(Terser msg, Terser tmp,List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
+		TranscodingOperationVisitor transcodeVisitor;
+		CodesInterface codeInterface;
+		
+		switch(value) {
+			case "FACILITIES":
+				codeInterface = facilitiesCodes;
+				break;
+			case "GH-LOCATIONS":
+				codeInterface = countryCodes;
+				break;
+			default:
+				throw new HL7Exception("Transcode propperty it's incorrect.");
+		}
+		
+		for(String key: keys) {
+			transcodeVisitor = new TranscodingOperationVisitor(key, value, codeInterface);
+			transcodeVisitor.start(tmp.getSegment(key.split("-")[0]).getMessage());
+		}
+			
+		
+	}
+	
+	/**
+	 * 
+	 * @param msg
+	 * @param tmp
+	 * @param fields
+	 * @param value
+	 * @param type
+	 * @param errorList
+	 */
     private void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         fields.forEach(field -> {
             try {
                 if (field.contains("#")) {
 					boolean toContinue = true;
 					log.info("Contains # - loop all segments/fields");
-
-
-					int i = 1;
+			
+					int i = 0;
+					
 					while (toContinue) {
 
                         var fieldRep = field.replace("#", String.valueOf(i));
@@ -108,7 +119,11 @@ public class MapperEngine {
                         }
                         log.info(fieldRep);
                         log.info(valueRep);
-
+                        if (msg.getSegment(fieldRep).isEmpty()) {
+                            log.info("Segmento:" + msg.getSegment(fieldRep).encode());
+                            log.info("Segment is empty.");
+                            break;
+                        }
                         switch (type) {
                             case TEXT:
                                 tmp.set(fieldRep, valueRep);
@@ -132,6 +147,7 @@ public class MapperEngine {
 					switch (type) {
 					case TEXT:
                             tmp.set(field, value);
+							//textFields(field, value, msg, tmp);
                             break;
 					case FIELD:
 						    tmp.set(field, msg.get(value));
@@ -287,5 +303,7 @@ public class MapperEngine {
         response.setErrorList(errorList);
         return response;
     }
+	
+	
 
 }
