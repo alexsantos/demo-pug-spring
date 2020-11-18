@@ -4,7 +4,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 @Component
-@PropertySource(value = "classpath:/properties/facilities.properties", encoding = "utf-8")
-public class FacilitiesCodes extends Codes {
+@PropertySource(value = "classpath:/properties/MarriageStatus.properties", encoding = "utf-8")
+public class MarriageStatusCodes extends Codes {
 
 }
