@@ -251,6 +251,8 @@ public class MapperEngine {
             for (Mapper mapper : integration.getMappers()) {
 				Category mapperCategory = mapper.getCategory();
 				String mapperClassName = this.getClass().getPackageName() + "." + MAPPERS_PACKAGE + "." + mapperCategory.getValue();
+				
+				AbstractMapper mapperInstance;
 				try {
 					log.debug("Searching for class " + mapperClassName + "...");
 					@SuppressWarnings("unchecked")
@@ -259,9 +261,7 @@ public class MapperEngine {
 					Constructor<? extends AbstractMapper> mapperConstructor = mapperClass.getConstructor(new Class[] { this.getClass(), Message.class, Message.class,
 							Terser.class, Terser.class, List.class, String.class });
 
-					AbstractMapper mapperInstance = mapperConstructor.newInstance(this, inMessage, outMessage, inTerser, outTerser, mapper.getKey(), mapper.getValue());
-
-					errorList.addAll(mapperInstance.map());
+					mapperInstance = mapperConstructor.newInstance(this, inMessage, outMessage, inTerser, outTerser, mapper.getKey(), mapper.getValue());
 				} catch (ClassNotFoundException e) {
 					log.error("Couldn't find class for Mapper category " + mapperCategory + ": " + mapperClassName + "!", e);
 					errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
@@ -273,7 +273,16 @@ public class MapperEngine {
 				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 					log.error("Couldn't instantiate " + mapperClassName + "!", e);
 					errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-                }
+					continue;
+				}
+				
+				try {
+					errorList.addAll(mapperInstance.map());
+				}
+				catch (Exception e) {
+					log.error("Unexpected exception running mapper '" + mapperClassName + "'!", e);
+					errorList.add(new MapperError("Global", "Unexpected exception running mapper '" + mapperClassName + "'!"));
+				}
             }
             log.info("Out message version:" + outMessage.getVersion());
             result = outMessage.encode();

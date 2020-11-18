@@ -29,7 +29,9 @@ public class Mapper {
 			JOIN("Join"),
 			NUMERIC("Numeric"),
 			CONTACT("Contact"),
-			AFTER_SWAP("AfterSwap");
+			AFTER_SWAP("AfterSwap"),
+			DATE("Date"),
+			SUBSTRING("Substring");
 
 		private final String value;
 
