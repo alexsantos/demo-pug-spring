@@ -50,6 +50,13 @@ public class MapperEngine {
     @Autowired
     MessageService messageService;
 
+	public FacilitiesCodes getFacilitiesCodes() {
+		return facilitiesCodes;
+	}
+	
+	public CountryCodes getCountryCodes() {
+		return countryCodes;
+	}
     /*
     private static String v24message = "MSH|^~\\&|GH|HCIS|DOTLOGIC|HCIS|20200709192254||OMG^O19|37272407|P|2.4|||AL\r"
             + "NTE|||S|TIPO_ENVIO_RESULTADOS^TIPO_ENVIO_RESULTADOS^TIPO_ENVIO_RESULTADOS\r"
