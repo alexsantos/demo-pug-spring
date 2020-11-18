@@ -15,10 +15,12 @@ import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.operation.FieldOperation;
 import com.example.demopugspring.operation.SwapOperation;
-import com.example.demopugspring.properties.CodesInterface;
+import com.example.demopugspring.properties.Codes;
 import com.example.demopugspring.properties.CountryCodes;
 import com.example.demopugspring.properties.FacilitiesCodes;
 import com.example.demopugspring.properties.IdentificationCodes;
+import com.example.demopugspring.properties.MarriageStatusCodes;
+import com.example.demopugspring.properties.PropertiesCategoriesEnum;
 import com.example.demopugspring.service.ApplicationService;
 import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MessageService;
@@ -44,6 +46,8 @@ public class MapperEngine {
     FacilitiesCodes facilitiesCodes;
     @Autowired
     CountryCodes countryCodes;
+    @Autowired
+    MarriageStatusCodes marriageStatusCodes;
     @Autowired
     IntegrationService integrationService;
     @Autowired
@@ -75,17 +79,20 @@ public class MapperEngine {
 
 	public void transcode(Terser msg, Terser tmp,List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
 		TranscodingOperationVisitor transcodeVisitor;
-		CodesInterface codeInterface;
-		
-		switch(value) {
-			case "FACILITIES":
+		Codes codeInterface;
+		PropertiesCategoriesEnum property = PropertiesCategoriesEnum.valueOfProperty(value);
+		switch(property) {
+			case FACILITIES:
 				codeInterface = facilitiesCodes;
 				break;
-			case "GH-LOCATIONS":
+			case GH_LOCATIONS:
 				codeInterface = countryCodes;
 				break;
-			case "IDENTIFICATIONS":
+			case IDENTIFICATIONS:
 				codeInterface = identificationCodes;
+				break;
+			case MARRIAGE_STATUS:
+				codeInterface = marriageStatusCodes;
 				break;
 			default:
 				throw new HL7Exception("Transcode propperty is incorrect.");

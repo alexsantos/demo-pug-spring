@@ -1,8 +1,6 @@
 package com.example.demopugspring.properties;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -10,12 +8,9 @@ import org.springframework.stereotype.Component;
 public class IdentificationCodes implements CodesInterface {
 	private final static String SUFFIX = "identification";
 
-	@Autowired
-	private Environment env;
-	
-	@Override
-	public String getDecodeCode(String encodedCode) {
-		return env.getProperty(SUFFIX + "." + encodedCode);
+	public static String getSuffix() {
+		return SUFFIX;
 	}
+	
 
 }

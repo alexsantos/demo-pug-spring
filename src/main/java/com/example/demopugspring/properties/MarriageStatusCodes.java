@@ -4,12 +4,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 @Component
-@PropertySource(value = "classpath:/properties/Country_GH_ehCOS.properties", encoding = "utf-8")
-public class CountryCodes extends Codes {
-	private final static String SUFFIX = "country";
+@PropertySource(value = "classpath:/properties/MarriageStatus.properties", encoding = "utf-8")
+public class MarriageStatusCodes extends Codes {
+	private final static String SUFFIX = "marriage.status";
 
 	public String getSuffix() {
 		return SUFFIX;
 	}
-
 }
