@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 @PropertySource(value = "classpath:/properties/Country_GH_ehCOS.properties", encoding = "utf-8")
 public class CountryCodes implements CodesInterface {
-
+	private final static String SUFFIX = "country";
 	@Autowired
 	private Environment env;
 
 	@Override
 	public String getDecodeCode(String encodedCode) {
-		return env.getProperty(encodedCode);
+		return env.getProperty(SUFFIX + "." + encodedCode);
 	}
 }
