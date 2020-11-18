@@ -1,17 +1,22 @@
 package com.example.demopugspring.engine;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demopugspring.controller.IntegrationRestController;
+import com.example.demopugspring.engine.mappers.AbstractMapper;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
+import com.example.demopugspring.model.Mapper.Category;
 import com.example.demopugspring.properties.CodesInterface;
 import com.example.demopugspring.properties.CountryCodes;
 import com.example.demopugspring.properties.FacilitiesCodes;
@@ -29,6 +34,8 @@ import ca.uhn.hl7v2.util.Terser;
 public class MapperEngine {
 
     private static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
+
+	private static final String MAPPERS_PACKAGE = "mappers";
 
 	@Autowired
 	FacilitiesCodes facilitiesCodes;
@@ -209,18 +216,19 @@ public class MapperEngine {
         HapiContext context = ContextSingleton.getInstance();
         PipeParser parser = context.getPipeParser();
         try {
-            Message message = parser.parse(incomingMessage);
-            //Message outMessage = new GenericMessage.V251(new GenericModelClassFactory());
-            //outMessage.parse(incomingMessage);
+			Message inMessage = parser.parse(incomingMessage);
+			// Message outMessage = new GenericMessage.V251(new
+			// GenericModelClassFactory());
+			// outMessage.parse(incomingMessage);
             Message outMessage = parser.parse(incomingMessage);
-            log.info("Incoming message version:" + message.getVersion());
-            Terser msg = new Terser(message);
-            Terser tmp = new Terser(outMessage);
-            String messageCode = msg.get("MSH-9-1");
-            String messageEvent = msg.get("MSH-9-2");
-            String sendingApp = msg.get("MSH-3-1");
-            String receivingApp = msg.get("MSH-5-1");
-            log.info("PV1-2:" + msg.get(".PV1-2"));
+			log.info("Incoming message version:" + inMessage.getVersion());
+			Terser inTerser = new Terser(inMessage);
+			Terser outTerser = new Terser(outMessage);
+			String messageCode = inTerser.get("MSH-9-1");
+			String messageEvent = inTerser.get("MSH-9-2");
+			String sendingApp = inTerser.get("MSH-3-1");
+			String receivingApp = inTerser.get("MSH-5-1");
+			log.info("PV1-2:" + inTerser.get(".PV1-2"));
 
             Integration integration = integrationService.findByMessageAndApplications(
                     messageService.findByCodeAndEvent(messageCode, messageEvent),
@@ -234,25 +242,30 @@ public class MapperEngine {
             // Change message version
 
             for (Mapper mapper : integration.getMappers()) {
-                switch (mapper.getCategory()) {
-                    case TEXT:
-                    case FIELD:
-                    case SWAP:
-                    case SEGMENT:
-                    case JOIN:
-                    case NUMERIC:
-					case CONTACT:
-                        log.info("TEXT or FIELD");
-                        mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
-                        break;
-					case AFTER_SWAP:
-						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
-						break;
-                    case TRANSCODING:
-                        transcode(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
-                        break;
-                    default:
-                        errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapper.getCategory()));
+				Category mapperCategory = mapper.getCategory();
+				String mapperClassName = this.getClass().getPackageName() + "." + MAPPERS_PACKAGE + "." + mapperCategory.getValue();
+				try {
+					log.debug("Searching for class " + mapperClassName + "...");
+					@SuppressWarnings("unchecked")
+					Class<? extends AbstractMapper> mapperClass = (Class<? extends AbstractMapper>) Class.forName(mapperClassName);
+
+					Constructor<? extends AbstractMapper> mapperConstructor = mapperClass.getConstructor(new Class[] { this.getClass(), Message.class, Message.class,
+							Terser.class, Terser.class, List.class, String.class });
+
+					AbstractMapper mapperInstance = mapperConstructor.newInstance(this, inMessage, outMessage, inTerser, outTerser, mapper.getKey(), mapper.getValue());
+
+					errorList.addAll(mapperInstance.map());
+				} catch (ClassNotFoundException e) {
+					log.error("Couldn't find class for Mapper category " + mapperCategory + ": " + mapperClassName + "!", e);
+					errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
+					continue;
+				} catch (NoSuchMethodException | SecurityException e) {
+					log.error("Couldn't find right constructor for " + mapperClassName + "!", e);
+					errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
+					continue;
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					log.error("Couldn't instantiate " + mapperClassName + "!", e);
+					errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
                 }
             }
             log.info("Out message version:" + outMessage.getVersion());
