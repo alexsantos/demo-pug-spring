@@ -66,41 +66,9 @@ public class MapperEngine {
             + "ORC|SC|5926450||11959318|CA||1.000||20200709192250|270680187^Geraldes^Ines Isabel da Cunha Lima|||HOS-1C7\r"
             + "OBR|1|5926450||9000003^ECG SIMPLES||20200709192250|20200709191513||||||||||||||||||||1^^^20200709000000|||||5000305&Ramos&Sousa||||20200709191513";
 */
-	private void transcode(Terser msg, Terser tmp, List<String> fields, String system, List<MapperError> errorList) {
-        System.out.println("System:" + system);
-        try {
 
-            switch (system) {
-                case "ICD-10":
-                    System.out.println("ICD-10");
-					System.out.println(fields);
-					tmp.set(fields.get(0), "1");
-					tmp.set(fields.get(1), "UM");
-					tmp.set(fields.get(2), "ISO");
-                    break;
-                case "GH-LOCATIONS":
-					decodeFieldsCodes(fields, countryCodes, msg, tmp);
-                    break;
-				case "FACILITIES":
-					decodeFieldsCodes(fields, facilitiesCodes, msg, tmp);
-					break;
-                default:
-                    log.error("No defined code system.");
-					errorList.add(new MapperError(fields.toString(), "No defined code system: " + system));
-            }
-        } catch (HL7Exception ex) {
-            log.error(ex.getMessage());
-			errorList.add(new MapperError(fields.toString(), ex.getMessage()));
-        }
-    }
-
-	private void decodeFieldsCodes(List<String> fields, CodesInterface codeInterface, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
-		for (String field : fields) {
-			decodedMessage.set(field, codeInterface.getDecodeCode(encodedMessage.get(field)));
-		}
-	}
-
-    private void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
+	/*
+	private void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         fields.forEach(field -> {
             try {
                 if (field.contains("#")) {
@@ -181,6 +149,7 @@ public class MapperEngine {
             }
         });
     }
+    */
 
 	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
 		String firstValue, secondValue;
@@ -189,30 +158,6 @@ public class MapperEngine {
 			secondValue = tmp.get(field);
 			tmp.set(field, firstValue);
 			tmp.set(value, secondValue);
-		}
-	}
-
-
-	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
-		StringBuffer listContactsHome = new StringBuffer();
-		int i=0;
-		for (String s : strings) {
-			if (StringUtils.isEmpty(s)) {
-				continue;
-			}
-			boolean isPhone = s.matches("[\\d]+");
-			if (isPhone) {
-				tmp.set("PID-13("+i+")-3", "PH");
-				tmp.set("PID-13("+i+")-12", s);
-				tmp.set("PID-13(" + i + ")-4", "");
-			} else {
-				tmp.set("PID-13("+i+")-3", "X.400");
-				tmp.set("PID-13(" + i + ")-4", s);
-				tmp.set("PID-13(" + i + ")-12", "");
-			}
-			tmp.set("PID-14(" + i + ")-7", "");
-
-			i++;
 		}
 	}
 
