@@ -151,16 +151,6 @@ public class MapperEngine {
     }
     */
 
-	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
-		String firstValue, secondValue;
-		for (String field : fields) {
-			firstValue = tmp.get(value);
-			secondValue = tmp.get(field);
-			tmp.set(field, firstValue);
-			tmp.set(value, secondValue);
-		}
-	}
-
 	public Response run(String incomingMessage) {
         String result = "";
         Response response = new Response();
