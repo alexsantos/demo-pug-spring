@@ -33,6 +33,8 @@ import com.example.demopugspring.visitor.TranscodingVisitor;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.Segment;
+import ca.uhn.hl7v2.model.v24.datatype.CX;
 import ca.uhn.hl7v2.parser.PipeParser;
 import ca.uhn.hl7v2.util.Terser;
 
@@ -96,7 +98,7 @@ public class MapperEngine {
 				codeInterface = marriageStatusCodes;
 				break;
 			default:
-				throw new HL7Exception("Transcode propperty it's incorrect.");
+				throw new HL7Exception("Transcode propperty is incorrect.");
 		}
 		
 		for(String key: keys) {
@@ -190,9 +192,6 @@ public class MapperEngine {
 					case NUMERIC:
                             tmp.set(field, msg.get(field).replaceAll("[^\\d.]", ""));
                             break;
-					case CONTACT:
-						addRepetitions(tmp, tmp.get("PID-13-12-1"), tmp.get("PID-14-7-1"), tmp.get("PID-13-4"));
-						break;
 					default:
 						log.error("No defined category");
 						errorList.add(new MapperError(field, "No Category defined as " + type));
@@ -241,24 +240,27 @@ public class MapperEngine {
 		}
 	}
 
-	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
+	public void addContactRepetitions(Terser tmp, String field, String... strings) throws HL7Exception {
 		StringBuffer listContactsHome = new StringBuffer();
 		int i=0;
+
 		for (String s : strings) {
 			if (StringUtils.isEmpty(s)) {
 				continue;
 			}
 			boolean isPhone = s.matches("[\\d]+");
 			if (isPhone) {
-				tmp.set("PID-13("+i+")-3", "PH");
-				tmp.set("PID-13("+i+")-12", s);
-				tmp.set("PID-13(" + i + ")-4", "");
+				tmp.set(field + "-13(" + i + ")-3", "PH");
+				tmp.set(field + "-13(" + i + ")-12", s);
+				tmp.set(field + "-13(" + i + ")-4", "");
+				tmp.set(field + "-13(" + i + ")-7", "");
+
 			} else {
-				tmp.set("PID-13("+i+")-3", "X.400");
-				tmp.set("PID-13(" + i + ")-4", s);
-				tmp.set("PID-13(" + i + ")-12", "");
+				tmp.set(field + "-13(" + i + ")-3", "X.400");
+				tmp.set(field + "-13(" + i + ")-4", s);
+				tmp.set(field + "-13(" + i + ")-12", "");
 			}
-			tmp.set("PID-14(" + i + ")-7", "");
+			tmp.set(field + "-14-7", "");
 
 			i++;
 		}
@@ -271,9 +273,14 @@ public class MapperEngine {
         HapiContext context = ContextSingleton.getInstance();
         PipeParser parser = context.getPipeParser();
         try {
-            Message message = parser.parse(incomingMessage);
+
             //Message outMessage = new GenericMessage.V251(new GenericModelClassFactory());
             //outMessage.parse(incomingMessage);
+            // Transforming the string before parsing to a HL7v2 Message
+            incomingMessage
+                    .replace("PDF_BASE64", "ED")
+                    .replace("|JVBER", "|^^^^JVBER");
+            Message message = parser.parse(incomingMessage);
             Message outMessage = parser.parse(incomingMessage);
             log.info("Incoming message version:" + message.getVersion());
             Terser msg = new Terser(message);
@@ -303,10 +310,16 @@ public class MapperEngine {
                     case SEGMENT:
                     case JOIN:
                     case NUMERIC:
-					case CONTACT:
                         log.info("TEXT or FIELD");
                         mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
                         break;
+					case CONTACT:
+						String field = mapper.getKey().get(0);
+						addContactRepetitions(tmp, field, tmp.get(field + "-13-7-1"), tmp.get(field + "-13-12-1"), tmp.get(field + "-14-7-1"), tmp.get(field + "-14-12-1"), tmp.get(field + "-13-04"));
+						break;
+					case AFTER_JOIN_FIELDS:
+						joinFields(tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
 					case AFTER_FIELD:
 						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
@@ -328,6 +341,7 @@ public class MapperEngine {
             }
             log.info("Out message version:" + outMessage.getVersion());
             result = outMessage.encode();
+			result = cleanMessage(result);
             log.info(result);
         } catch (HL7Exception ex) {
             log.error(ex.getMessage());
@@ -337,6 +351,39 @@ public class MapperEngine {
         response.setErrorList(errorList);
         return response;
     }
+
+	private void joinFields(Terser tmp, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
+		String[] field_split = key.get(0).split("-");
+		String[] value_split = value.split("-");
+		Segment segmentTarget = tmp.getSegment(field_split[0]);
+
+		int numberRepTarget = tmp.getSegment(field_split[0]).getField(Integer.valueOf(field_split[1])).length;
+		int numberRepSource = tmp.getSegment(value_split[0]).getField(Integer.valueOf(value_split[1])).length;
+		int totalRepetitions = (numberRepTarget + numberRepSource);
+		int indexRepTarget = numberRepTarget;
+		int indexRepSource = 0;
+
+		while (indexRepTarget < totalRepetitions) {
+			while (indexRepSource < numberRepSource) {
+				int indexFields = 1;
+				int numFieldsSource = ((CX) segmentTarget.getField(Integer.valueOf(field_split[1]), indexRepSource)).getComponents().length;
+				while (indexFields < numFieldsSource + 1) {
+					String valueToPass = tmp.get(segmentTarget, Integer.valueOf(value_split[1]), indexRepSource, indexFields, 1);
+					System.out.println(segmentTarget.getMessage().encode());
+					tmp.set(segmentTarget, Integer.valueOf(field_split[1]), indexRepTarget, indexFields, 1, valueToPass);
+					tmp.set(tmp.getSegment(value_split[0]), Integer.valueOf(value_split[1]), indexRepSource, indexFields, 1, null);
+					indexFields++;
+				}
+				indexRepTarget++;
+				indexRepSource++;
+			}
+
+		}
+	}
+
+	private String cleanMessage(String message) throws HL7Exception {
+		return message.replaceAll("\\|(~)*\\|", "||");
+	}
 	
 	
 

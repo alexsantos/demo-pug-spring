@@ -31,6 +31,7 @@ public class Mapper {
         CONTACT("contact"),
 		AFTER_SWAP("after_swap"),
 		AFTER_FIELD("after_field"),
+		AFTER_JOIN_FIELDS("after_join_fields"),
 		CLEAR_IF("clear_if"),
 		REPLACE("replace");
 
