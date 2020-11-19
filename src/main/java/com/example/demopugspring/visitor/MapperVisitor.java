@@ -43,10 +43,20 @@ public class MapperVisitor implements MessageVisitor{
 	
 	@Override
 	public boolean start(Message message) throws HL7Exception {
+		int segmentLength = this.segment.split("/").length;
 		StringTokenizer tok = new StringTokenizer(this.segment, "/", false);
-		Structure[] segments = (Structure[]) message.getAll(tok.nextToken());
+
+
+		String nextToken = tok.nextToken();
+		Structure[] segmentsRoot = (Structure[]) message.getAll(nextToken);
+		Structure[] segments = segmentsRoot;
+
+		while (tok.hasMoreTokens()) {
+			Group g = (Group) segmentsRoot[0];
+			segments = g.getAll(tok.nextToken());
+		}
 		
-		
+
 		if(segmentRepetition >= 0) {
 			segments[segmentRepetition].accept(this, Location.UNKNOWN);
 		}
