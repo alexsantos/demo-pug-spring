@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @PropertySource(value = "classpath:/properties/IdentificationCodes.properties", encoding = "utf-8")
-public class IdentificationCodes implements CodesInterface {
+public class IdentificationCodes extends Codes {
 	private final static String SUFFIX = "identification";
 
-	public static String getSuffix() {
+	public String getSuffix() {
 		return SUFFIX;
 	}
 	

@@ -31,7 +31,8 @@ public class Mapper {
         CONTACT("contact"),
 		AFTER_SWAP("after_swap"),
 		AFTER_FIELD("after_field"),
-		AFTER_JOIN_FIELDS("after_join_fields");
+			AFTER_JOIN_FIELDS("after_join_fields"),
+			ADD_SNS("add_sns");
 
         private final String value;
 

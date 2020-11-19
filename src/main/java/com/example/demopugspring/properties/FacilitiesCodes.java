@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class FacilitiesCodes extends Codes {
 	private final static String SUFFIX = "facility";
 
-	public static String getSuffix() {
+	public String getSuffix() {
 		return SUFFIX;
 	}
 }
