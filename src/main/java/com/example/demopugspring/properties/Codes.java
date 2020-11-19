@@ -9,6 +9,9 @@ public abstract class Codes {
 	private Environment env;
 	
 	public String getDecodeCode(String encodedCode) {
+		if(encodedCode == null) {
+			encodedCode = "";
+		}
 		return env.getProperty(encodedCode);
 	}
 }

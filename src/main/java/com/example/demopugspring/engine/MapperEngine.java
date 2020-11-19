@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.demopugspring.controller.IntegrationRestController;
 import com.example.demopugspring.factory.ContextSingleton;
+import com.example.demopugspring.filter.MatchesValueFilter;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
+import com.example.demopugspring.operation.ClearFilteredOperation;
 import com.example.demopugspring.operation.FieldOperation;
+import com.example.demopugspring.operation.ReplaceOperation;
 import com.example.demopugspring.operation.SwapOperation;
 import com.example.demopugspring.properties.Codes;
 import com.example.demopugspring.properties.CountryCodes;
@@ -25,7 +28,7 @@ import com.example.demopugspring.service.ApplicationService;
 import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MessageService;
 import com.example.demopugspring.visitor.MapperVisitor;
-import com.example.demopugspring.visitor.TranscodingOperationVisitor;
+import com.example.demopugspring.visitor.TranscodingVisitor;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
@@ -76,7 +79,7 @@ public class MapperEngine {
 	
 
 	public void transcode(Terser msg, Terser tmp,List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
-		TranscodingOperationVisitor transcodeVisitor;
+		TranscodingVisitor transcodeVisitor;
 		Codes codeInterface;
 		PropertiesCategoriesEnum property = PropertiesCategoriesEnum.valueOfProperty(value);
 		switch(property) {
@@ -97,7 +100,7 @@ public class MapperEngine {
 		}
 		
 		for(String key: keys) {
-			transcodeVisitor = new TranscodingOperationVisitor(key, value, codeInterface);
+			transcodeVisitor = new TranscodingVisitor(key, value, codeInterface);
 			transcodeVisitor.start(tmp.getSegment(key.split("-")[0]).getMessage());
 		}
 			
@@ -202,15 +205,40 @@ public class MapperEngine {
         });
     }
 
-	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
+	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList){
 		SwapOperation swapOperation = new SwapOperation(value, fields);
-		swapOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
+		try {
+			swapOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());	
+		}catch(HL7Exception e) {
+			 errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));	
+		}
 	}
 
 	private void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
 		FieldOperation fieldOperation = new FieldOperation(value, fields);
-		fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
-		
+		try {	
+		    fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
+	    }catch(HL7Exception e) {
+		    errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));	
+	    }
+	}
+	
+	private void clearIfOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
+		ClearFilteredOperation clearOperation = new ClearFilteredOperation(value, fields, new MatchesValueFilter(value));
+		try {
+			clearOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
+        }catch(HL7Exception e) {
+		    errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));	
+        }
+	}
+
+	private void replaceOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
+		ReplaceOperation replaceOperation = new ReplaceOperation(value, fields);
+		try {
+			replaceOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
+		} catch (HL7Exception e) {
+			errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));
+		}
 	}
 
 	public void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
@@ -288,6 +316,12 @@ public class MapperEngine {
                     case TRANSCODING:
                         transcode(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
                         break;
+                    case CLEAR_IF:
+                    	clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
+                    	break;
+					case REPLACE:
+						replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
                     default:
                         errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapper.getCategory()));
                 }

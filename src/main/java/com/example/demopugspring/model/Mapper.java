@@ -30,7 +30,9 @@ public class Mapper {
         NUMERIC("numeric"),
         CONTACT("contact"),
 		AFTER_SWAP("after_swap"),
-		AFTER_FIELD("after_field");
+		AFTER_FIELD("after_field"),
+		CLEAR_IF("clear_if"),
+		REPLACE("replace");
 
         private final String value;
 
