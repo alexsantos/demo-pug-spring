@@ -317,6 +317,9 @@ public class MapperEngine {
 						String field = mapper.getKey().get(0);
 						addContactRepetitions(tmp, field, tmp.get(field + "-13-7-1"), tmp.get(field + "-13-12-1"), tmp.get(field + "-14-7-1"), tmp.get(field + "-14-12-1"), tmp.get(field + "-13-04"));
 						break;
+					case ADD_SNS:
+						addFieldSNS(tmp, msg, mapper.getKey(), mapper.getValue(), errorList);
+						break;
 					case AFTER_JOIN_FIELDS:
 						joinFields(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
@@ -379,6 +382,17 @@ public class MapperEngine {
 			}
 
 		}
+	}
+
+	private void addFieldSNS(Terser tmp, Terser msg, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
+
+		String[] field_split = key.get(0).split("-");
+		Segment segmentTarget = tmp.getSegment(field_split[0]);
+
+		int numberRepTarget = tmp.getSegment(field_split[0]).getField(Integer.valueOf(field_split[1])).length;
+		int indexRepSource = 0;
+		tmp.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 1, 1, msg.get(value));
+		tmp.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
 	}
 
 	private String cleanMessage(String message) throws HL7Exception {

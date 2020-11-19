@@ -33,6 +33,7 @@ public class Mapper {
 		AFTER_FIELD("after_field"),
 		AFTER_JOIN_FIELDS("after_join_fields"),
 		CLEAR_IF("clear_if"),
+        ADD_SNS("add_sns"),
 		REPLACE("replace");
 
         private final String value;
