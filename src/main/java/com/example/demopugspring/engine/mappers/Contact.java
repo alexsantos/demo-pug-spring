@@ -1,6 +1,5 @@
 package com.example.demopugspring.engine.mappers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,17 +26,13 @@ public class Contact extends AbstractMapper {
 	}
 
 	@Override
-	public List<MapperError> mapKey(String key) {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
-
+	public void mapKey(String key) {
 		try {
 			addRepetitions(outgoingTerser, outgoingTerser.get("PID-13-12-1"), outgoingTerser.get("PID-14-7-1"), outgoingTerser.get("PID-13-4"));
 		} catch (HL7Exception e) {
 			log.error(e.getMessage());
 			errors.add(new MapperError(key, e.getMessage()));
 		}
-
-		return errors;
 	}
 
 	private void addRepetitions(Terser tmp, String... strings) throws HL7Exception {
@@ -62,5 +57,4 @@ public class Contact extends AbstractMapper {
 			i++;
 		}
 	}
-
 }

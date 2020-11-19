@@ -29,6 +29,12 @@ public abstract class AbstractMapper {
 	protected List<String> keys;
 	protected String value;
 
+	protected ArrayList<MapperError> errors = new ArrayList<MapperError>();
+
+	public List<MapperError> getErrors() {
+		return errors;
+	}
+
 	public abstract String getDescription();
 
 	// public Message getIncomingMessage() {
@@ -69,16 +75,13 @@ public abstract class AbstractMapper {
 		this.value = value;
 	}
 
-	public List<MapperError> map() {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
+	public void map() {
 		for (String key : keys) {
-			errors.addAll(mapKey(key));
+			mapKey(key);
 		}
-
-		return errors;
 	}
 
-	public abstract List<MapperError> mapKey(String key);
+	public abstract void mapKey(String key);
 
 	@Override
 	public int hashCode() {

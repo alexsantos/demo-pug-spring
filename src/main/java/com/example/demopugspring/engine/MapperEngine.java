@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.model.Mapper.Category;
-import com.example.demopugspring.properties.CodesInterface;
 import com.example.demopugspring.properties.CountryCodes;
 import com.example.demopugspring.properties.FacilitiesCodes;
 import com.example.demopugspring.service.ApplicationService;
@@ -212,7 +210,8 @@ public class MapperEngine {
 				}
 				
 				try {
-					errorList.addAll(mapperInstance.map());
+					mapperInstance.map();
+					errorList.addAll(mapperInstance.getErrors());
 				}
 				catch (Exception e) {
 					log.error("Unexpected exception running mapper '" + mapperClassName + "'!", e);

@@ -1,6 +1,5 @@
 package com.example.demopugspring.engine.mappers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,9 +30,7 @@ public class Substring extends AbstractMapper {
 	}
 
 	@Override
-	public List<MapperError> mapKey(String key) {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
-
+	public void mapKey(String key) {
 		Matcher valueMatcher = SUBSTRING_VALUE_PATTERN.matcher(value);
 
 		if (valueMatcher.matches()) {
@@ -57,8 +54,5 @@ public class Substring extends AbstractMapper {
 			log.error("Invalid value. Must follow pattern '" + SUBSTRING_VALUE_REGEX + "'.");
 			errors.add(new MapperError(key, "Invalid value. Must follow pattern '" + SUBSTRING_VALUE_REGEX + "'."));
 		}
-
-		return errors;
 	}
-
 }

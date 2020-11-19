@@ -1,6 +1,5 @@
 package com.example.demopugspring.engine.mappers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demopugspring.engine.MapperEngine;
@@ -24,16 +23,12 @@ public class Text extends AbstractMapper {
 		return MAPPER_DESCRIPTION;
 	}
 
-	public List<MapperError> mapKey(String key) {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
-
+	public void mapKey(String key) {
 		try {
 			outgoingTerser.set(key, value);
 		} catch (HL7Exception e) {
 			log.error(e.getMessage());
 			errors.add(new MapperError(key, e.getMessage()));
 		}
-
-		return errors;
 	}
 }

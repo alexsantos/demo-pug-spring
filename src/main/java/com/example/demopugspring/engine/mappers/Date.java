@@ -2,7 +2,6 @@ package com.example.demopugspring.engine.mappers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demopugspring.engine.MapperEngine;
@@ -29,9 +28,7 @@ public class Date extends AbstractMapper {
 	}
 
 	@Override
-	public List<MapperError> mapKey(String key) {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
-
+	public void mapKey(String key) {
 		String inDate = null;
 		try {
 			inDate = outgoingTerser.get(key);
@@ -44,8 +41,5 @@ public class Date extends AbstractMapper {
 			log.error("Couldn't parse date '" + inDate + "' with format '" + value + "'.", e.getMessage());
 			errors.add(new MapperError(key, "Couldn't parse date '" + inDate + "' with format '" + value + "'."));
 		}
-
-		return errors;
 	}
-
 }

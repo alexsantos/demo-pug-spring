@@ -1,6 +1,5 @@
 package com.example.demopugspring.engine.mappers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demopugspring.engine.MapperEngine;
@@ -26,9 +25,7 @@ public class Transcoding extends AbstractMapper {
 	}
 
 	@Override
-	public List<MapperError> map() {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
-
+	public void map() {
 		log.debug("System:" + value);
 		try {
 
@@ -54,12 +51,10 @@ public class Transcoding extends AbstractMapper {
 			log.error(ex.getMessage());
 			errors.add(new MapperError(keys.toString(), ex.getMessage()));
 		}
-
-		return errors;
 	}
 
 	@Override
-	public List<MapperError> mapKey(String key) {
+	public void mapKey(String key) {
 		throw new UnsupportedOperationException("The method mapKey isn't supported in Transcoding mapper.");
 	}
 
@@ -68,5 +63,4 @@ public class Transcoding extends AbstractMapper {
 			decodedMessage.set(field, codeInterface.getDecodeCode(encodedMessage.get(field)));
 		}
 	}
-
 }

@@ -1,6 +1,5 @@
 package com.example.demopugspring.engine.mappers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demopugspring.engine.MapperEngine;
@@ -25,9 +24,7 @@ public class AfterSwap extends AbstractMapper {
 	}
 
 	@Override
-	public List<MapperError> mapKey(String key) {
-		ArrayList<MapperError> errors = new ArrayList<MapperError>();
-
+	public void mapKey(String key) {
 		try {
 			String firstValue = outgoingTerser.get(value);
 			String secondValue = outgoingTerser.get(key);
@@ -38,8 +35,5 @@ public class AfterSwap extends AbstractMapper {
 			log.error(e.getMessage());
 			errors.add(new MapperError(key, e.getMessage()));
 		}
-
-		return errors;
 	}
-
 }
