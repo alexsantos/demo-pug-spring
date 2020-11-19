@@ -13,8 +13,9 @@ public abstract class Codes {
 		if(encodedCode == null) {
 			encodedCode = "";
 		}
-		return env.getProperty(getSuffix() + "." + encodedCode);	}
+		return env.getProperty(getSuffix() + "." + encodedCode);
 	}
+
 
 	protected abstract String getSuffix();
 }
