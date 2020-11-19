@@ -15,6 +15,18 @@ import ca.uhn.hl7v2.model.Structure;
 import ca.uhn.hl7v2.model.Type;
 
 
+/**
+ * This class it's the main class for the visitor implementation, given a path
+ * it creates the indexs and it's responsable for the route until reaching the
+ * primitive that was suppose to achieve.
+ * 
+ * While implementing new visitors you can extend this function and overide the
+ * desired function for example, if you want to change Primitives you can extend
+ * this function and then Override the visit Primitive function to get the
+ * specific functionality.
+ * 
+ */
+
 public class MapperVisitor implements MessageVisitor{
 
 	private boolean subComponent = false;
@@ -88,7 +100,6 @@ public class MapperVisitor implements MessageVisitor{
 
 	@Override
 	public boolean start(Segment segment, Location location) throws HL7Exception {
-		
 		if(fieldNumber > 0) {
 			getField(segment, fieldNumber, location);
 		}
@@ -107,7 +118,6 @@ public class MapperVisitor implements MessageVisitor{
 		
 		fields = segment.getField(fieldNumber);
 		if(fieldRepetition >= 0){
-			
 			accessField(fields[fieldRepetition], location);
 		}
 		else {
@@ -174,10 +184,19 @@ public class MapperVisitor implements MessageVisitor{
 
 	@Override
 	public boolean end(Composite type, Location location) throws HL7Exception {
-		subComponent = false;
+		noSubComponent();
 		return false;
 	}
-
+	
+	/**
+	 * This function it's used to check if the access is for a subcomponet or
+	 * not. Because it's done only at the end of visiting a Composite it the
+	 * false value
+	 */
+	public void noSubComponent() {
+		subComponent = false;
+	}
+	
 	@Override
 	public boolean visit(Primitive type, Location location) throws HL7Exception {
 		type.setValue(this.getValue());
@@ -185,7 +204,17 @@ public class MapperVisitor implements MessageVisitor{
 	}
 
 	
-	
+	/**
+	 * Probably this function could be better, but the mission of this function
+	 * it's with a given path retrieve each index of the tree, if the position
+	 * has a wildcard (#) it will perform all repetitions of that element,
+	 * example PID(#)-3-1 it will go for each PID to the position 3-1
+	 * 
+	 * @param spec
+	 *            - the path for a resource
+	 * @return
+	 * @throws HL7Exception
+	 */
 	private  int[] getIndexs(String spec) throws HL7Exception {
 		String nextToken ;
 		int[] indexs = new int[5];

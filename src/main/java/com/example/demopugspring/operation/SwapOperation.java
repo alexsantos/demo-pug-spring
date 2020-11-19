@@ -12,6 +12,7 @@ import ca.uhn.hl7v2.model.Primitive;
 public class SwapOperation implements Operation{
 	String sourcePath;
 	List<String> destinationsPath;
+	ArrayList<Primitive> sourcePrimitives;
 	
 	public SwapOperation(String sourcePath, List<String> destinations) {
 		this.sourcePath = sourcePath;
@@ -21,18 +22,17 @@ public class SwapOperation implements Operation{
 	@Override
 	public void doOperation(Message destMessage) throws HL7Exception{
 		RetrievePrimitivesVisitor source = new RetrievePrimitivesVisitor(sourcePath, null);
-		ArrayList<Primitive> sourcePrimitives;
-		
 		source.start(destMessage);
 		sourcePrimitives = source.getPrimitives();
 		
 		for(String destPath : destinationsPath) {
-			swapOperation(destPath, sourcePrimitives, destMessage);
+			doOperation(destMessage, destPath);
 		}
 		 
 	}
 	
-	private void swapOperation(String destPath, ArrayList<Primitive> sourcePrimitives, Message destMessage) throws HL7Exception{
+	@Override
+	public void doOperation(Message destMessage, String destPath) throws HL7Exception {
 		String sourceValue;
 		String destinationValue;
 		Primitive sourcePrimitive;

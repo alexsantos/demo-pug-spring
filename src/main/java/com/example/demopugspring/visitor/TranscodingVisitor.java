@@ -7,11 +7,11 @@ import ca.uhn.hl7v2.Location;
 import ca.uhn.hl7v2.model.Primitive;
 
 
-public class TranscodingOperationVisitor extends MapperVisitor {
+public class TranscodingVisitor extends MapperVisitor {
 	
 	Codes codeInterface;
 	
-	public TranscodingOperationVisitor(String path, String value, Codes codeInterface) throws HL7Exception {
+	public TranscodingVisitor(String path, String value, Codes codeInterface) throws HL7Exception {
 		super(path, value);
 		this.codeInterface = codeInterface;
 	}

@@ -12,6 +12,7 @@ import ca.uhn.hl7v2.model.Primitive;
 public class FieldOperation implements Operation {
 	String sourcePath;
 	List<String> destinationsPath;
+	ArrayList<Primitive> sourcePrimitives;
 	
 	
 	public FieldOperation(String sourcePath, List<String> destinations){
@@ -22,17 +23,17 @@ public class FieldOperation implements Operation {
 	@Override
 	public void doOperation(Message message) throws HL7Exception {
 		RetrievePrimitivesVisitor source = new RetrievePrimitivesVisitor(sourcePath, null);
-		ArrayList<Primitive> sourcePrimitives;
 		
 		source.start(message);
 		sourcePrimitives = source.getPrimitives();
 		
 		for(String destPath : destinationsPath) {
-			fieldOperation(destPath, sourcePrimitives, message);
+			doOperation(message, destPath);
 		}
 	}
 	
-	private void fieldOperation(String desPath, ArrayList<Primitive> sourcePrimitives, Message message) throws HL7Exception {
+	@Override
+	public void doOperation(Message message, String desPath) throws HL7Exception {
 		Primitive sourcePrimitive;
 		Primitive destPrimitive;
 		ArrayList<Primitive> destPrimitives;
@@ -48,5 +49,6 @@ public class FieldOperation implements Operation {
 			destPrimitive.setValue(sourcePrimitive.getValue());
 		}
 	}
+
 
 }
