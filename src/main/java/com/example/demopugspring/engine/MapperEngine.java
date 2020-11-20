@@ -118,7 +118,7 @@ public class MapperEngine {
 	 * @param type
 	 * @param errorList
 	 */
-    private void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
+	void mapper(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         fields.forEach(field -> {
             try {
                 if (field.contains("#")) {
@@ -204,7 +204,7 @@ public class MapperEngine {
         });
     }
 
-	private void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList){
+	public void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
 		SwapOperation swapOperation = new SwapOperation(value, fields);
 		try {
 			swapOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());	
@@ -213,7 +213,7 @@ public class MapperEngine {
 		}
 	}
 
-	private void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
+	public void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
 		FieldOperation fieldOperation = new FieldOperation(value, fields);
 		try {	
 		    fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
@@ -222,7 +222,7 @@ public class MapperEngine {
 	    }
 	}
 	
-	private void clearIfOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
+	public void clearIfOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
 		ClearFilteredOperation clearOperation = new ClearFilteredOperation(value, fields, new MatchesValueFilter(value));
 		try {
 			clearOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
@@ -231,7 +231,7 @@ public class MapperEngine {
         }
 	}
 
-	private void replaceOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
+	public void replaceOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
 		ReplaceOperation replaceOperation = new ReplaceOperation(value, fields);
 		try {
 			replaceOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
@@ -241,7 +241,6 @@ public class MapperEngine {
 	}
 
 	public void addContactRepetitions(Terser tmp, String field, String... strings) throws HL7Exception {
-		StringBuffer listContactsHome = new StringBuffer();
 		int i=0;
 
 		for (String s : strings) {
@@ -355,7 +354,7 @@ public class MapperEngine {
         return response;
     }
 
-	private void joinFields(Terser tmp, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
+	public void joinFields(Terser tmp, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
 		String[] field_split = key.get(0).split("-");
 		String[] value_split = value.split("-");
 		Segment segmentTarget = tmp.getSegment(field_split[0]);
@@ -371,10 +370,9 @@ public class MapperEngine {
 				int indexFields = 1;
 				int numFieldsSource = ((CX) segmentTarget.getField(Integer.valueOf(field_split[1]), indexRepSource)).getComponents().length;
 				while (indexFields < numFieldsSource + 1) {
-					String valueToPass = tmp.get(segmentTarget, Integer.valueOf(value_split[1]), indexRepSource, indexFields, 1);
-					System.out.println(segmentTarget.getMessage().encode());
-					tmp.set(segmentTarget, Integer.valueOf(field_split[1]), indexRepTarget, indexFields, 1, valueToPass);
-					tmp.set(tmp.getSegment(value_split[0]), Integer.valueOf(value_split[1]), indexRepSource, indexFields, 1, null);
+					String valueToPass = Terser.get(segmentTarget, Integer.valueOf(value_split[1]), indexRepSource, indexFields, 1);
+					Terser.set(segmentTarget, Integer.valueOf(field_split[1]), indexRepTarget, indexFields, 1, valueToPass);
+					Terser.set(tmp.getSegment(value_split[0]), Integer.valueOf(value_split[1]), indexRepSource, indexFields, 1, null);
 					indexFields++;
 				}
 				indexRepTarget++;
@@ -384,15 +382,14 @@ public class MapperEngine {
 		}
 	}
 
-	private void addFieldSNS(Terser tmp, Terser msg, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
+	public void addFieldSNS(Terser tmp, Terser msg, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
 
 		String[] field_split = key.get(0).split("-");
 		Segment segmentTarget = tmp.getSegment(field_split[0]);
 
 		int numberRepTarget = tmp.getSegment(field_split[0]).getField(Integer.valueOf(field_split[1])).length;
-		int indexRepSource = 0;
-		tmp.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 1, 1, msg.get(value));
-		tmp.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
+		Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 1, 1, msg.get(value));
+		Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
 	}
 
 	private String cleanMessage(String message) throws HL7Exception {
