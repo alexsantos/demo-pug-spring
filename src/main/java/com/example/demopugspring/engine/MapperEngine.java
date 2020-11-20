@@ -127,7 +127,7 @@ public class MapperEngine {
 			
 					int i = 0;
 					
-					while (toContinue) {
+					while (true) {
 
                         var fieldRep = field.replace("#", String.valueOf(i));
                         
@@ -213,7 +213,7 @@ public class MapperEngine {
 		}
 	}
 
-	public void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
+	public void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
 		FieldOperation fieldOperation = new FieldOperation(value, fields);
 		try {	
 		    fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
@@ -397,7 +397,7 @@ public class MapperEngine {
 		Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
 	}
 
-	private String cleanMessage(String message) throws HL7Exception {
+	private String cleanMessage(String message) {
 		return message.replaceAll("\\|(~)*\\|", "||");
 	}
 	
