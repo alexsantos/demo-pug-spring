@@ -38,7 +38,7 @@ def getRegistryName(String branch_name) {
     } else if (branch_name =~ hotfix_pattern) {
         return "eu.gcr.io/helios-qua"
     } else {
-        return null;
+        return "eu.gcr.io/helios-qua";
     }
 }
 def getVersion(String version, String branch_name) {
@@ -94,17 +94,11 @@ pipeline {
         echo "Building feature ${FEATURE_NAME}"
         echo "Building version ${VERSION}"
         echo "Building in Registry ${REGISTRY}"
+        echo "Building in Registry ${env.BRANCH_NAME}"
       }
     }
     stage('Configurations') {
       parallel {
-        stage("dockerlogin tag"){
-          steps{
-            withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-              sh "cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://eu.gcr.io"
-            }
-          }
-        }
         stage('Check Snapshots') {
           when { anyOf {expression { get_branch_type("${env.BRANCH_NAME}")=="master" }; expression { get_branch_type("${env.BRANCH_NAME}")=="release" }}}
           steps {
@@ -138,7 +132,11 @@ pipeline {
     stage('Build jar') {
       steps{
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-          sh "mvn -gs $MAVEN_GLOBAL_SETTINGS package -Dmaven.test.skip=true "
+              withEnv(["JAVA_HOME=${tool 'jdk11'}/jdk-11", "PATH=${tool 'jdk11'}/jdk-11/bin:${env.PATH}"]) {
+                    echo "Building feature $JAVA_HOME"
+            sh 'ls /var/jenkins_home/tools/hudson.model.JDK/jdk11/jdk-11'
+          sh "mvn package -Dmaven.test.skip=true "
+              }
         }
       }
     }
@@ -146,7 +144,7 @@ pipeline {
       steps{
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
           withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-            sh "docker build --build-arg VERSION=${VERSION} -t ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+            sh "docker build --build-arg VERSION=${VERSION} -t ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} ."
             sh "docker images"
           }
         }
