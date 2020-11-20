@@ -163,7 +163,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = { "/PID-28" };
 		meng.countryCodes = codes;
-		meng.transcode(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PID-28-1"));
 	}
 
@@ -186,7 +186,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = { "/PATIENT/PID-28" };
 		meng.countryCodes = codes;
-		meng.transcode(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PATIENT/PID-28-1"));
 	}
 
@@ -212,7 +212,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = { "/PID-3(#)-4" };
 		meng.identificationCodes = codes;
-		meng.transcode(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "IDENTIFICATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "IDENTIFICATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PID-3(0)-4"));
 		assertEquals(toBeReturned2, terserSpy.get("/PID-3(1)-4"));
 
