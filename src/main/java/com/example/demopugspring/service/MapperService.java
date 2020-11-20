@@ -20,9 +20,11 @@ public class MapperService {
         mapperRepository.findAll().forEach(maps::add);
         return maps;
     }
+
     public Mapper findById(Long id) {
         return mapperRepository.findById(id).orElseThrow();
     }
+
     public Mapper save(Mapper mapper) {
         List<String> temp = mapper.getKey();
         temp.removeAll(Collections.singleton(""));

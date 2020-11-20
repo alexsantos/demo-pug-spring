@@ -1,0 +1,31 @@
+doctype
+html(lang="en")
+  include ../includes/header
+  body
+    #layout
+      a(href="#menu" id="menuLink" class="menu-link")
+        span
+      #menu
+        include ../includes/menu
+        +menu("messages")
+      #main
+        .content
+          if (errorMessage)
+              p=errorMessage
+              p
+          form.pure-form.pure-form-stacked(name="messages" action="/messages/update" method="POST")
+            fieldset
+              legend Edit a message
+              label(for="code") Code
+              input(type="text" id="code" name="code" value=message.code)
+              label(for="event") Event
+              input(type="text" id="event" name="event" value=message.event)
+              select(id="version" name="version")
+                each version in versions
+                  if (version == message.version)
+                    option(selected value=version)= version.getValue()
+                  else
+                    option(value=version)= version.getValue()
+              input(type="hidden" name="id" value=message.id)
+              button.pure-button.pure-button-primary(type="submit") Update
+  include ../includes/footer

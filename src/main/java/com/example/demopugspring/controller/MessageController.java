@@ -1,6 +1,5 @@
 package com.example.demopugspring.controller;
 
-import com.example.demopugspring.model.Application;
 import com.example.demopugspring.model.Message;
 import com.example.demopugspring.service.MessageService;
 import org.slf4j.Logger;
@@ -11,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class MessageController {
     @Autowired
     MessageService messageService;
 
-    @GetMapping(value = "/messages")
+    @GetMapping(value = {"/messages", "/messages/index"})
     public String getMessages(Model model) {
         List<Message> messages = messageService.findAll();
         model.addAttribute("messages", messages);
@@ -34,12 +34,13 @@ public class MessageController {
     public String showAddMessage(Model model) {
         Message message = new Message();
         model.addAttribute("message", message);
+        model.addAttribute("versions", Message.Version.values());
         return "messages/create";
     }
 
-    @PostMapping(value = "/messages/create")
+    @PostMapping(value = {"/messages/create", "/messages/update"})
     public String addMessage(Model model,
-                                 @ModelAttribute("message") Message message) {
+                             @ModelAttribute("message") Message message) {
         try {
             logger.info(message.toString());
             messageService.save(message);
@@ -51,7 +52,19 @@ public class MessageController {
             logger.error(errorMessage);
             model.addAttribute("errorMessage", errorMessage);
             model.addAttribute("add", true);
-            return "messages/index";
+            model.addAttribute("message", message);
+            model.addAttribute("versions", Message.Version.values());
+            return "messages/edit";
         }
     }
+
+    @GetMapping(value = {"/messages/edit"})
+    public String showEditMessage  (Model model,
+                                 @RequestParam("id") Long id) {
+        Message message = messageService.findById(id);
+        model.addAttribute("message", message);
+        model.addAttribute("versions", Message.Version.values());
+        return "messages/edit";
+    }
+
 }

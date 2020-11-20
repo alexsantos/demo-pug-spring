@@ -23,9 +23,10 @@ html(lang="en")
                 thead
                   tr
                     th #
-                    th Message
+                    th Source Message / Version
                     th Sending Application
                     th Receiving Application
+                    th Result Message / Version
                     th
                 tbody
                   - if (!integrations) integrations = []
@@ -34,11 +35,13 @@ html(lang="en")
                       td
                         a(href="/integrations/"+item.id)=item.id
                       td
-                        a(href="/integrations/"+item.id)=item.message.code + "-" + item.message.event
+                        a(href="/integrations/"+item.id)=item.message.code + "-" + item.message.event + " / " + item.message.version.getValue()
                       td
                         a(href="/integrations/"+item.id)=item.sendingApp.code
                       td
                         a(href="/integrations/"+item.id)=item.receivingApp.code
+                      td
+                        a(href="/integrations/" + item.id)=item.resultMessage.code + "-" + item.resultMessage.event + " / " + item.resultMessage.version.getValue()
                       td
                         a.pure-button.button-small(href="#")
                           i.fas.fa-pencil-alt
