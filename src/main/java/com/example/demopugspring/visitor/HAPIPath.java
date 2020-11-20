@@ -2,10 +2,18 @@ package com.example.demopugspring.visitor;
 
 
 public class HAPIPath {
-	public static String WRONG_PATH = "Wrong path specified.";
+
+	protected static final String WRONG_PATH = "Wrong path specified.";
+	private static final String DEAFULT_INDEX = "1";
+	private static final Integer DEFAULT_REP = 0;
 
 	private String structureName;
 	private Integer repetition;
+
+	public HAPIPath() {
+		structureName = DEAFULT_INDEX;
+		repetition = DEFAULT_REP;
+	}
 
 	public HAPIPath(String name, Integer repetition) {
 		structureName = name;
