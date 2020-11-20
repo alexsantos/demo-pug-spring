@@ -3,10 +3,10 @@ package com.example.demopugspring;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class DemoPugSpringApplicationTests {
 
-    @Test
+ //   @Test
     void contextLoads() {
     }
 
