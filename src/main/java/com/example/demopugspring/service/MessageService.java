@@ -16,7 +16,7 @@ public class MessageService {
 
     public List<Message> findAll() {
         List<Message> messages = new ArrayList<>();
-        messageRepository.findAll().forEach(messages::add);
+        messageRepository.findByOrderByCodeAscEventAscVersionAsc().forEach(messages::add);
         return messages;
     }
 
@@ -30,5 +30,9 @@ public class MessageService {
 
     public Message findByCodeAndEvent(String code, String event) {
         return messageRepository.findByCodeAndEvent(code, event);
+    }
+
+    public Message find(String code, String event, String version) {
+        return messageRepository.findByCodeAndEventAndVersion(code, event, Message.Version.fromString(version));
     }
 }

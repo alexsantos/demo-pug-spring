@@ -24,6 +24,8 @@ public class Integration {
     private Application sendingApp;
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Application receivingApp;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Message resultMessage;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Mapper> mappers;
 

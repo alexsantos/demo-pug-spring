@@ -1,9 +1,6 @@
 package com.example.demopugspring.engine;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +14,6 @@ import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.filter.MatchesValueFilter;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
-import com.example.demopugspring.model.Mapper.Category;
 import com.example.demopugspring.operation.ClearFilteredOperation;
 import com.example.demopugspring.operation.FieldOperation;
 import com.example.demopugspring.operation.ReplaceOperation;
@@ -63,6 +59,7 @@ public class MapperEngine {
 	ApplicationService applicationService;
 	@Autowired
 	MessageService messageService;
+
 
     /*
     private static String v24message = "MSH|^~\\&|GH|HCIS|DOTLOGIC|HCIS|20200709192254||OMG^O19|37272407|P|2.4|||AL\r"
@@ -131,7 +128,7 @@ public class MapperEngine {
 			
 					int i = 0;
 					
-					while (toContinue) {
+					while (true) {
 
                         var fieldRep = field.replace("#", String.valueOf(i));
                         
@@ -208,7 +205,7 @@ public class MapperEngine {
         });
     }
 
-	public void swapAfterOperarion(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
+	public void swapAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
 		SwapOperation swapOperation = new SwapOperation(value, fields);
 		try {
 			swapOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());	
@@ -217,7 +214,7 @@ public class MapperEngine {
 		}
 	}
 
-	public void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) throws HL7Exception {
+	public void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
 		FieldOperation fieldOperation = new FieldOperation(value, fields);
 		try {	
 		    fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
@@ -270,91 +267,57 @@ public class MapperEngine {
 	}
 
 	public Response run(String incomingMessage) {
-		String result = "";
-		Response response = new Response();
-		List<MapperError> errorList = new ArrayList<>();
-		HapiContext context = ContextSingleton.getInstance();
-		PipeParser parser = context.getPipeParser();
-		try {
+        String result = "";
+        Response response = new Response();
+        List<MapperError> errorList = new ArrayList<>();
+        HapiContext context = ContextSingleton.getInstance();
+        PipeParser parser = context.getPipeParser();
+        try {
+            // Transforming the string before parsing to a HL7v2 Message
+            incomingMessage
+                    .replace("PDF_BASE64", "ED")
+                    .replace("|JVBER", "|^^^^JVBER");
+            Message message = parser.parse(incomingMessage);
+            Message volatileMessage = parser.parse(incomingMessage);
+            log.info("Incoming message version:" + message.getVersion());
+            Terser msg = new Terser(message);
+            Terser volatileTerser = new Terser(volatileMessage);
+            String messageCode = msg.get("MSH-9-1");
+            String messageEvent = msg.get("MSH-9-2");
+            String sendingApp = msg.get("MSH-3-1");
+            String receivingApp = msg.get("MSH-5-1");
+			String messageVersion = msg.get("MSH-12");
 
-			// Message outMessage = new GenericMessage.V251(new
-			// GenericModelClassFactory());
-			// outMessage.parse(incomingMessage);
-			// Transforming the string before parsing to a HL7v2 Message
-			incomingMessage
-					.replace("PDF_BASE64", "ED")
-					.replace("|JVBER", "|^^^^JVBER");
-			Message message = parser.parse(incomingMessage);
-			Message outMessage = parser.parse(incomingMessage);
-			log.info("Incoming message version:" + message.getVersion());
-			Terser msg = new Terser(message);
-			Terser tmp = new Terser(outMessage);
-			String messageCode = msg.get("MSH-9-1");
-			String messageEvent = msg.get("MSH-9-2");
-			String sendingApp = msg.get("MSH-3-1");
-			String receivingApp = msg.get("MSH-5-1");
-			log.info("PV1-2:" + msg.get(".PV1-2"));
-
-			Integration integration = integrationService.findByMessageAndApplications(
-					messageService.findByCodeAndEvent(messageCode, messageEvent),
-					applicationService.findByCode(sendingApp),
-					applicationService.findByCode(receivingApp));
-			if (integration == null) {
-				throw new HL7Exception("No integration found for message " + messageCode + "-" + messageEvent +
-						" and sending application " + sendingApp + " and receiving application " + receivingApp);
+            Integration integration = integrationService.findByMessageAndApplications(
+                    messageService.find(messageCode, messageEvent, messageVersion),
+                    applicationService.findByCode(sendingApp),
+                    applicationService.findByCode(receivingApp));
+            if (integration == null) {
+                throw new HL7Exception("No integration found for message " + messageCode + "-" + messageEvent +
+                        " and sending application " + sendingApp + " and receiving application " + receivingApp);
+            }
+            log.info("Integration:" + integration.getMappers().toString());
+            // Change message version
+			volatileTerser.set("MSH-9-1", integration.getResultMessage().getCode());
+			volatileTerser.set("MSH-9-2", integration.getResultMessage().getEvent());
+			volatileTerser.set("MSH-12", integration.getResultMessage().getVersion().getValue());
+			Message outMessage = parser.parse(volatileMessage.encode());
+			log.info(outMessage.getName() + " " + outMessage.getVersion());
+			for (String name:outMessage.getNames()) {
+				log.info(name);
 			}
-			log.info("Integration:" + integration.getMappers().toString());
-			// Change message version
-
-			for (Mapper mapper : integration.getMappers()) {
-				Category mapperCategory = mapper.getCategory();
-
-				List<Category> supportedOperations = Arrays.asList(new Category[] { Category.TEXT });
-				if (supportedOperations.contains(mapperCategory)) {
-					String mapperClassName = this.getClass().getPackageName() + "." + OPERATIONS_PACKAGE + "." + mapperCategory.getValue();
-
-					AbstractOperation mapperInstance = null;
-					try {
-						log.debug("Searching for class " + mapperClassName + "...");
-						@SuppressWarnings("unchecked")
-						Class<? extends AbstractOperation> mapperClass = (Class<? extends AbstractOperation>) Class.forName(mapperClassName);
-
-						Constructor<? extends AbstractOperation> mapperConstructor = mapperClass.getConstructor(new Class[] { this.getClass(), Message.class, Message.class,
-								Terser.class, Terser.class, List.class, String.class });
-
-						mapperInstance = mapperConstructor.newInstance(this, message, outMessage, msg, tmp, mapper.getKey(), mapper.getValue());
-					} catch (ClassNotFoundException e) {
-						log.error("Couldn't find class for Mapper category " + mapperCategory + ": " + mapperClassName + "!", e);
-						errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-						continue;
-					} catch (NoSuchMethodException | SecurityException e) {
-						log.error("Couldn't find right constructor for " + mapperClassName + "!", e);
-						errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-						continue;
-					} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-						log.error("Couldn't instantiate " + mapperClassName + "!", e);
-						errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-						continue;
-					}
-
-					try {
-						mapperInstance.map();
-						errorList.addAll(mapperInstance.getErrors());
-					} catch (Exception e) {
-						log.error("Unexpected exception running mapper '" + mapperClassName + "'!", e);
-						errorList.add(new MapperError("Global", "Unexpected exception running mapper '" + mapperClassName + "'!"));
-					}
-				} else {
-					switch (mapperCategory) {
-					case TEXT:
-					case FIELD:
-					case SWAP:
-					case SEGMENT:
-					case JOIN:
-					case NUMERIC:
-						log.info("TEXT or FIELD");
-						mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
-						break;
+			Terser tmp = new Terser(outMessage);
+            for (Mapper mapper : integration.getMappers()) {
+                switch (mapper.getCategory()) {
+                    case TEXT:
+                    case FIELD:
+                    case SWAP:
+                    case SEGMENT:
+                    case JOIN:
+                    case NUMERIC:
+                        log.info("TEXT or FIELD");
+                        mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
+                        break;
 					case CONTACT:
 						String field = mapper.getKey().get(0);
 						addContactRepetitions(tmp, field, tmp.get(field + "-13-7-1"), tmp.get(field + "-13-12-1"), tmp.get(field + "-14-7-1"), tmp.get(field + "-14-12-1"), tmp.get(field + "-13-04"));
@@ -366,7 +329,7 @@ public class MapperEngine {
 						joinFields(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
 					case AFTER_FIELD:
-						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
+						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
 					case AFTER_SWAP:
 						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
@@ -377,26 +340,26 @@ public class MapperEngine {
 					case TRANSCODING:
                         transcode(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
+
 					case REPLACE:
 						replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
-					default:
-						errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapperCategory));
-					}
-				}
-			}
-			log.info("Out message version:" + outMessage.getVersion());
-			result = outMessage.encode();
+                    default:
+                        errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapper.getCategory()));
+                }
+            }
+            log.info("Out message version:" + outMessage.getName() + " " + outMessage.getVersion());
+            result = outMessage.encode();
 			result = cleanMessage(result);
-			log.info(result);
-		} catch (HL7Exception ex) {
-			log.error(ex.getMessage());
-			errorList.add(new MapperError("Global", ex.getMessage()));
-		}
-		response.setMessage(result);
-		response.setErrorList(errorList);
-		return response;
-	}
+            log.info(result);
+        } catch (HL7Exception ex) {
+            log.error(ex.getMessage());
+            errorList.add(new MapperError("Global", ex.getMessage()));
+        }
+        response.setMessage(result);
+        response.setErrorList(errorList);
+        return response;
+    }
 
 	public void joinFields(Terser tmp, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
 		String[] field_split = key.get(0).split("-");
@@ -436,8 +399,10 @@ public class MapperEngine {
 		Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
 	}
 
-	private String cleanMessage(String message) throws HL7Exception {
+	private String cleanMessage(String message) {
 		return message.replaceAll("\\|(~)*\\|", "||");
 	}
+	
+	
 
 }

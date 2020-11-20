@@ -19,15 +19,17 @@ html(lang="en")
               thead
                 tr
                   th #
-                  th Message
+                  th Source Message / Version
                   th Sending Application
                   th Receiving Application
+                  th Result Message / Version
               tbody
                 tr
                   td=integration.id
-                  td=integration.message.code
+                  td=integration.message.code + "-" + integration.message.event + " / " + integration.message.version.getValue()
                   td=integration.sendingApp.code
                   td=integration.receivingApp.code
+                  td=integration.resultMessage.code + "-" + integration.resultMessage.event + " / " + integration.resultMessage.version.getValue()
           .pure-u-1-1
             h3 Mapper List
             form(name="integration" action="/integrations/update" method="POST")
@@ -42,16 +44,39 @@ html(lang="en")
                     th ON
                 tbody
                   each item in mappers
-                    tr
-                      td=item.id
-                      td=PugHelper.join(",", item.key)
-                      td=item.value
-                      td=item.category
-                      td
-                        if (integration.hasMapper(item.id))
-                          input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
-                        else
-                          input(type="checkbox" id="included" name="mappers" value=item.id)
+                    if (integration.hasMapper(item.id))
+                      tr
+                        td=item.id
+                        td=PugHelper.join(",", item.key)
+                        td=item.value
+                        td=item.category
+                        td
+                          if (integration.hasMapper(item.id))
+                            input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
+                          else
+                            input(type="checkbox" id="included" name="mappers" value=item.id)
+              p
+              table.pure-table.pure-table-horizontal
+                thead
+                  tr
+                    th #
+                    th Keys
+                    th Value
+                    th Category
+                    th ON
+                tbody
+                    each item in mappers
+                      if (!integration.hasMapper(item.id))
+                        tr
+                          td=item.id
+                          td=PugHelper.join(",", item.key)
+                          td=item.value
+                          td=item.category
+                          td
+                            if (integration.hasMapper(item.id))
+                              input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
+                            else
+                              input(type="checkbox" id="included" name="mappers" value=item.id)
               p
                 button.pure-button.pure-button-primary(type="submit") Update Integration
   script.

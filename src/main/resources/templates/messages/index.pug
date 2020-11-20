@@ -25,6 +25,7 @@ html(lang="en")
                     th #
                     th Code
                     th Event
+                    th Version
                     th 
                 tbody
                     - if (!messages) messages = []
@@ -33,8 +34,9 @@ html(lang="en")
                         td=item.id
                         td=item.code
                         td=item.event
+                        td=item.version.getValue()
                         td
-                          a.pure-button.button-small(href="#")
+                          a.pure-button.button-small(href="/messages/edit?id="+item.id)
                             i.fas.fa-pencil-alt
 
   include ../includes/footer
