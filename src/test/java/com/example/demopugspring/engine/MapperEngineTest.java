@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.example.demopugspring.factory.ContextSingleton;
@@ -18,7 +19,10 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.util.Terser;
 
 class MapperEngineTest {
-	List<MapperError> errors = Mockito.mock(List.class);
+	@Mock
+	List<MapperError> errors;
+
+
 
 	@Test
 	void testReplace() throws HL7Exception {
