@@ -17,5 +17,8 @@ html(lang="en")
               input(type="text" id="code" name="code")
               label(for="event") Event
               input(type="text" id="event" name="event")
+              select(id="version" name="version")
+                  each version in versions
+                    option(value=version)= version.getValue()
               button.pure-button.pure-button-primary(type="submit") Create
   include ../includes/footer

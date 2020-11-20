@@ -75,10 +75,9 @@ public class IntegrationController {
     @PostMapping(value = "/integrations/update")
     public String updateIntegration(Model model,
                                     @ModelAttribute("id") Long id,
-                                    @RequestParam("mappers") List<Long> mappers) {
+                                    @RequestParam(value = "mappers", required = false, defaultValue = "") List<Long> mappers) {
         try {
             logger.info("Integration ID:" + id);
-            logger.info(mappers.toString());
             integrationService.updateMappers(id, mappers);
             model.addAttribute("success", "1");
             return "redirect:/integrations/".concat(String.valueOf(id));

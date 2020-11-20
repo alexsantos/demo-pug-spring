@@ -13,10 +13,10 @@ html(lang="en")
           form.pure-form.pure-form-stacked(name="integration" action="/integrations/create" method="POST")
             fieldset
               legend Create a new Integration
-              label(for="message") Message
+              label(for="message") Source Message
               select(id="message" name="message")
                 each message in messages
-                    option(value=message.id)= message.code + "-" + message.event
+                    option(value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
               label(for="sendingApp") Sending Application
               select(id="sendingApp" name="sendingApp")
                 each application in applications
@@ -25,5 +25,9 @@ html(lang="en")
               select(id="receivingApp" name="receivingApp")
                 each application in applications
                   option(value=application.id)= application.code
+              label(for="resultMessage") Result Message
+              select(id="resultMessage" name="resultMessage")
+                  each message in messages
+                    option(value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
               button.pure-button.pure-button-primary(type="submit") Create
   include ../includes/footer

@@ -16,7 +16,7 @@ public class ApplicationService {
 
     public List<Application> findAll() {
         List<Application> applications = new ArrayList<>();
-        applicationRepository.findAll().forEach(applications::add);
+        applicationRepository.findByOrderByCodeAsc().forEach(applications::add);
         return applications;
     }
     public Application findById(Long id) {
