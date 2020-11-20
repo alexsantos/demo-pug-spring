@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demopugspring.engine.operation.AbstractOperation;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.filter.MatchesValueFilter;
 import com.example.demopugspring.model.Integration;
@@ -332,7 +331,7 @@ public class MapperEngine {
 						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
 					case AFTER_SWAP:
-						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
+						swapAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
 					case CLEAR_IF:
 						clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
@@ -340,7 +339,6 @@ public class MapperEngine {
 					case TRANSCODING:
                         transcode(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
-
 					case REPLACE:
 						replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
