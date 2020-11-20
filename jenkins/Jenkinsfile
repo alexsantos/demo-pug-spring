@@ -94,7 +94,6 @@ pipeline {
         echo "Building feature ${FEATURE_NAME}"
         echo "Building version ${VERSION}"
         echo "Building in Registry ${REGISTRY}"
-        echo "Create Psit ${CREATEPSIT}"
       }
     }
     stage('Configurations') {
@@ -192,27 +191,8 @@ pipeline {
         }
       }
     }
-    stage("deploy image"){
-      parallel {
-        stage("deploy image FEATURE"){
-          when { allOf {expression { get_branch_type("${env.BRANCH_NAME}")=="feature"};  expression {"${CREATEPSIT}"=="true" }} }
-          steps{
-            withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-              //  sh "gsutil rsync -d -r ./resources/ ${GS_NAME}/data/resources/ "
-              //  sh "gcloud compute instance-groups managed rolling-action restart --zone \"europe-west4-a\" \"${MIG_NAME}\" --project helios-qua"
-            }
-          }
-        }
-      }
-    }
     stage('Clean and create'){
       parallel {
-        stage("Create machine"){
-          when { allOf{ expression { isReturnScript("gsutil -q stat ${GS_NAME}" + "/startupScript.sh")==1}; expression { get_branch_type("${env.BRANCH_NAME}")=="feature"} ; expression {"${CREATEPSIT}"=="true" }}}
-          steps{
-            build job: "${env.JOB_CREATE_VM}", parameters: [string(name: 'SOURCE_PROJECT_NAME', value: getBranchAsCode("${env.BRANCH_NAME}")), string(name: 'SOURCE_PROJECT_FULL_NAME', value: '')]
-          }
-        }
         stage("docker clean"){
           steps{
             sh "docker rmi ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
