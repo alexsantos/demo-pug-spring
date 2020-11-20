@@ -223,9 +223,9 @@ public class MapperEngine {
 	}
 	
 	public void clearIfOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
-		ClearFilteredOperation clearOperation = new ClearFilteredOperation(value, fields, new MatchesValueFilter(value));
-		try {
-			clearOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
+        try {
+            ClearFilteredOperation clearOperation = new ClearFilteredOperation(value, fields, new MatchesValueFilter(value, tmp));
+            clearOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
         }catch(HL7Exception e) {
 		    errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));	
         }
