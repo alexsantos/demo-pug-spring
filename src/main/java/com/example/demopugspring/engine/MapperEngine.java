@@ -1,12 +1,17 @@
 package com.example.demopugspring.engine;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.Segment;
-import ca.uhn.hl7v2.model.v24.datatype.CX;
-import ca.uhn.hl7v2.parser.PipeParser;
-import ca.uhn.hl7v2.util.Terser;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.demopugspring.engine.operation.AbstractOperation;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.filter.MatchesValueFilter;
@@ -17,23 +22,25 @@ import com.example.demopugspring.operation.ClearFilteredOperation;
 import com.example.demopugspring.operation.FieldOperation;
 import com.example.demopugspring.operation.ReplaceOperation;
 import com.example.demopugspring.operation.SwapOperation;
-import com.example.demopugspring.properties.*;
+import com.example.demopugspring.properties.Codes;
+import com.example.demopugspring.properties.CountryCodes;
+import com.example.demopugspring.properties.FacilitiesCodes;
+import com.example.demopugspring.properties.IdentificationCodes;
+import com.example.demopugspring.properties.MarriageStatusCodes;
+import com.example.demopugspring.properties.PropertiesCategoriesEnum;
 import com.example.demopugspring.service.ApplicationService;
 import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MessageService;
 import com.example.demopugspring.visitor.MapperVisitor;
 import com.example.demopugspring.visitor.TranscodingVisitor;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.HapiContext;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.Segment;
+import ca.uhn.hl7v2.model.v24.datatype.CX;
+import ca.uhn.hl7v2.parser.PipeParser;
+import ca.uhn.hl7v2.util.Terser;
 
 @Service
 public class MapperEngine {
@@ -207,8 +214,8 @@ public class MapperEngine {
     }
 
     public void clearIfOperation(Terser tmp, List<String> fields, String value, List<MapperError> errorList) {
-        ClearFilteredOperation clearOperation = new ClearFilteredOperation(value, fields, new MatchesValueFilter(value));
         try {
+            ClearFilteredOperation clearOperation = new ClearFilteredOperation(value, fields, new MatchesValueFilter(value, tmp));
             clearOperation.doOperation(tmp.getSegment(fields.get(0).split("-")[0]).getMessage());
         } catch (HL7Exception e) {
             errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));
@@ -292,7 +299,6 @@ public class MapperEngine {
             Terser tmp = new Terser(outMessage);
             for (Mapper mapper : integration.getMappers()) {
                 Category mapperCategory = mapper.getCategory();
-
                 List<Category> supportedOperations = Arrays.asList(Category.TEXT);
                 if (supportedOperations.contains(mapperCategory)) {
                     String mapperClassName = this.getClass().getPackageName() + "." + OPERATIONS_PACKAGE + "." + mapperCategory.getValue();
