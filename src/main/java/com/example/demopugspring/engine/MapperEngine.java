@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demopugspring.controller.IntegrationRestController;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.filter.MatchesValueFilter;
 import com.example.demopugspring.model.Integration;
@@ -41,7 +40,7 @@ import ca.uhn.hl7v2.util.Terser;
 @Service
 public class MapperEngine {
 
-    private static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
+	private static final Logger log = LoggerFactory.getLogger(MapperEngine.class);
     
     @Autowired
     IdentificationCodes identificationCodes;
@@ -58,29 +57,16 @@ public class MapperEngine {
     @Autowired
     MessageService messageService;
 
-    /*
-    private static String v24message = "MSH|^~\\&|GH|HCIS|DOTLOGIC|HCIS|20200709192254||OMG^O19|37272407|P|2.4|||AL\r"
-            + "NTE|||S|TIPO_ENVIO_RESULTADOS^TIPO_ENVIO_RESULTADOS^TIPO_ENVIO_RESULTADOS\r"
-            + "NTE|||N|DESTINO_ENVIO_RESULTADOS^DESTINO_ENVIO_RESULTADOS^DESTINO_ENVIO_RESULTADOS\r"
-            + "PID|||9967492^^^JMS^NS~1380466^^^HCIS^NS~271487^^^CCA^NS~302905^^^CCTV^NS|141342838^^^NIF^PT~1856391111^^^N_BENEF~07271576^^^N_BI|RIBEIRO^ANA MARIA ANTUNES DOS SANTOS MENINO||19660524000000|F|||RUA HELENA VAZ DA SILVA, 10, 1º C - ALTA DE LISBOA^^LISBOA^11^CP 1750-432^PORTUGAL||^^^anamenino@gmail.com^^^931717817|^^^^^^962363614|||||370620506||||PORTUGAL|||||^PORTUGAL||N\r"
-            + "PV1||Consultas|9^HOS-1C7^^^^^^^CARDIOLOGIA|S||9^^^^^^^^CARDIOLOGIA|||15225^Ramos^Sousa|9||||CON||N|5000305||11959318||1924|S||||||||||||||||||||||20200709000000||||||B0077^^^^GA_NUM_SENHA\r"
-            + "ORC|SC|5926450||11959318|CA||1.000||20200709192250|270680187^Geraldes^Ines Isabel da Cunha Lima|||HOS-1C7\r"
-            + "OBR|1|5926450||9000003^ECG SIMPLES||20200709192250|20200709191513||||||||||||||||||||1^^^20200709000000|||||5000305&Ramos&Sousa||||20200709191513";
-*/
-
-
-	
 	
 	private void textFields(String field, String text, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
 		MapperVisitor visitor;
 
 		visitor =  new MapperVisitor(field,  text);
 		visitor.start(decodedMessage.getSegment(field.split("-")[0]).getMessage());
-	
 	}
 	
 
-	public void transcode(Terser msg, Terser tmp,List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
+	public void transcode(Terser tmp, List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
 		TranscodingVisitor transcodeVisitor;
 		Codes codeInterface;
 		PropertiesCategoriesEnum property = PropertiesCategoriesEnum.valueOfProperty(value);
@@ -327,7 +313,7 @@ public class MapperEngine {
 						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
                     case TRANSCODING:
-                        transcode(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
+						transcode(tmp, mapper.getKey(), mapper.getValue(), errorList);
                         break;
                     case CLEAR_IF:
                     	clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
@@ -381,7 +367,7 @@ public class MapperEngine {
 		}
 	}
 
-	private String cleanMessage(String message) throws HL7Exception {
+	private String cleanMessage(String message) {
 		return message.replaceAll("\\|(~)*\\|", "||");
 	}
 	
