@@ -371,7 +371,12 @@ public class MapperEngine {
 					case AFTER_SWAP:
 						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
 						break;
+					case CLEAR_IF:
+						clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
+					case TRANSCODING:
                         transcode(tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
 					case REPLACE:
 						replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;

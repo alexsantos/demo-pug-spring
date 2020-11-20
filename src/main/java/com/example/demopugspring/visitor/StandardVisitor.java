@@ -1,6 +1,8 @@
 package com.example.demopugspring.visitor;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.StringTokenizer;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -28,6 +30,7 @@ import ca.uhn.hl7v2.model.Type;
  */
 
 public class StandardVisitor implements MessageVisitor {
+
 	/**
 	 * Since composites can be nested, this property is used to keep the state
 	 * when visiting them. On a first call to
@@ -37,74 +40,95 @@ public class StandardVisitor implements MessageVisitor {
 	 * visit the Type at {@link #subComponentNumber} instead.
 	 */
 	private boolean visitingTopComposite = false;
-	private String segment;
-	private Integer fieldNumber;
-	private Integer fieldRepetition;
-	private Integer componentNumber;
-	private Integer subComponentNumber;
-	private Integer segmentRepetition;
+	private Queue<HAPIPath> groupAndRep;
+	private HAPIPath field;
+	private HAPIPath component;
+	private HAPIPath subComponent;
 
-	private ArrayList<Type> visitedTypes = new ArrayList<Type>();
+	private ArrayList<Type> visitedTypes = new ArrayList<>();
 
 	public StandardVisitor(String path) throws HL7Exception {
-		int[] indices = getIndexs(path);
-		this.segment = path.split("-")[0];
-		this.segmentRepetition = indices[0];
-		this.fieldRepetition = indices[1];
-		this.fieldNumber = indices[2];
-		this.componentNumber = indices[3];
-		this.subComponentNumber = indices[4];
-
+		groupAndRep = new LinkedList<>();
+		getIndexs(path);
 	}
 
 	@Override
 	public boolean start(Message message) throws HL7Exception {
-		StringTokenizer tok = new StringTokenizer(this.segment, "/", false);
+		HAPIPath element = groupAndRep.poll();
 
-		String nextToken = tok.nextToken();
-		Structure[] segmentsRoot = (Structure[]) message.getAll(nextToken);
-		Structure[] segments = segmentsRoot;
-
-		while (tok.hasMoreTokens()) {
-			Group g = (Group) segmentsRoot[0];
-			segments = g.getAll(tok.nextToken());
+		if (element == null) {
+			throw new HL7Exception(HAPIPath.WRONG_PATH);
 		}
 
-		if (segmentRepetition >= 0) {
-			segments[segmentRepetition].accept(this, Location.UNKNOWN);
-		} else {
-			for (Structure segment : segments) {
-				segment.accept(this, Location.UNKNOWN);
+		int elementRep = element.getRepetition();
+
+		Structure[] structures = message.getAll(element.getStructureName());
+
+		if (elementRep >= 0) {
+			structures[elementRep].accept(this, Location.UNKNOWN);
+		}
+		else {
+			for (Structure structure : structures) {
+				structure.accept(this, Location.UNKNOWN);
 			}
 		}
+
 		return false;
 	}
 
 	@Override
 	public boolean end(Message message) throws HL7Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean start(Group group, Location location) throws HL7Exception {
-		// TODO Auto-generated method stub
+		HAPIPath element = groupAndRep.poll();
+
+		if (element == null) {
+			throw new HL7Exception(HAPIPath.WRONG_PATH);
+		}
+
+		int elementRep = element.getRepetition();
+
+		Structure[] structures = group.getAll(element.getStructureName());
+
+		if (elementRep >= 0) {
+			structures[elementRep].accept(this, location);
+		} else {
+			for (Structure structure : structures) {
+				structure.accept(this, location);
+			}
+		}
+
 		return false;
 	}
 
 	@Override
 	public boolean end(Group group, Location location) throws HL7Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean start(Segment segment, Location location) throws HL7Exception {
+		String fieldName;
+		int fieldNumber;
+		if (this.field == null) {
+			throw new HL7Exception(HAPIPath.WRONG_PATH);
+		}
+
+		fieldName = this.field.getStructureName();
+		if (fieldName.equals("#")) {
+			fieldNumber = 0;
+		} else {
+			fieldNumber = Integer.parseInt(fieldName);
+		}
+
 		if (fieldNumber > 0) {
-			getField(segment, fieldNumber, location);
+			getField(segment, fieldNumber, this.field.getRepetition(), location);
 		} else {
 			for (int i = 1; i <= segment.numFields(); i++) {
-				getField(segment, i, location);
+				getField(segment, i, this.field.getRepetition(), location);
 			}
 		}
 
@@ -113,32 +137,38 @@ public class StandardVisitor implements MessageVisitor {
 
 	@Override
 	public boolean end(Segment segment, Location location) throws HL7Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean start(Field field, Location location) throws HL7Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean end(Field field, Location location) throws HL7Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean start(Composite type, Location location) throws HL7Exception {
-		Type[] types = type.getComponents();
-
+		Type[] types = type.getComponents(); 
+		HAPIPath hapiPath;
 		if (visitingTopComposite) {
-			visitComposites(types, subComponentNumber, location);
-		} else {
+			hapiPath = subComponent;
+			if (hapiPath == null) {
+				throw new HL7Exception(HAPIPath.WRONG_PATH);
+			}
+			visitComposites(types, hapiPath, location);
+		}
+		else {
 			visitingTopComposite = true;
-			visitComposites(types, componentNumber, location);
+			hapiPath = this.component;
+			if (hapiPath == null) {
+				throw new HL7Exception("Wrong path specified.");
+			}
 
+			visitComposites(types, hapiPath, location);
 		}
 		return false;
 	}
@@ -161,68 +191,71 @@ public class StandardVisitor implements MessageVisitor {
 
 	/**
 	 * Probably this function could be better, but the mission of this function
-	 * is with a given path retrieve each index of the tree, if the position has
-	 * a wildcard (#) it will perform all repetitions of that element, example
-	 * PID(#)-3-1 it will go for each PID to the position 3-1
+	 * it's with a given path retrieve each index of the tree, if the position
+	 * has a wildcard (#) it will perform all repetitions of that element,
+	 * example PID(#)-3-1 it will go for each PID to the position 3-1
 	 * 
 	 * @param spec
 	 *            - the path for a resource
 	 * @return
 	 * @throws HL7Exception
 	 */
-	private int[] getIndexs(String spec) throws HL7Exception {
-		String nextToken;
-		int[] indexs = new int[5];
+	private void getIndexs(String spec) throws HL7Exception {
 		StringTokenizer tok = new StringTokenizer(spec, "-", false);
-		StringTokenizer specRep = new StringTokenizer(tok.nextToken(), "()", false);
-		try {
-			specRep.nextToken();
-			if (specRep.hasMoreTokens()) {
-				nextToken = specRep.nextToken();
-				indexs[0] = (nextToken.equals("#")) ? -1 : Integer.parseInt(nextToken);
-			} else {
-				indexs[0] = 0;
-			}
-
-			if (!tok.hasMoreTokens())
-				throw new HL7Exception("Must specify field in spec " + spec);
-
-			nextToken = tok.nextToken();
-			StringTokenizer fieldSpec = new StringTokenizer(nextToken, "()", false);
-
-			nextToken = fieldSpec.nextToken();
-			indexs[2] = (nextToken.equals("#")) ? -1 : Integer.parseInt(nextToken);
-
-			if (fieldSpec.hasMoreTokens()) {
-				nextToken = fieldSpec.nextToken();
-				indexs[1] = (nextToken.equals("#")) ? -1 : Integer.parseInt(nextToken);
-			} else {
-				indexs[1] = 0;
-			}
-
-			for (int i = 3; i < indexs.length; i++) {
-				if (tok.hasMoreTokens()) {
-					nextToken = tok.nextToken();
-					indexs[i] = (nextToken.equals("#")) ? -1 : Integer.parseInt(nextToken);
-				} else {
-					indexs[i] = 1;
-				}
-			}
-			return indexs;
-		} catch (NumberFormatException e) {
-			throw new HL7Exception("Invalid integer in spec " + spec);
+		parseSegmentPathSpec(tok.nextToken());
+		field = parseNameAndRepetition(tok.nextToken());
+		component = parseNameAndRepetition(tok.nextToken());
+		if (tok.hasMoreTokens()) {
+			subComponent = parseNameAndRepetition(tok.nextToken());
 		}
 	}
 
-	private void getField(Segment segment, int fieldNumber, Location location) throws HL7Exception {
-		Type[] fields;
+	/**
+	 * This method parses if the path given has groups and group reps indicators
+	 * If they do they will be parsed and will be added to the structure, for
+	 * last it will check and parse the segment and its rep if exists.
+	 * 
+	 * @param segmentPathSpec
+	 * @throws HL7Exception
+	 */
 
-		fields = segment.getField(fieldNumber);
+	private void parseSegmentPathSpec(String segmentPathSpec) throws HL7Exception {
+		String groupToken;
+		StringTokenizer segmentPathTokenizer = new StringTokenizer(segmentPathSpec, "/", false);
+
+		while (segmentPathTokenizer.hasMoreTokens()) {
+			groupToken = segmentPathTokenizer.nextToken();
+			groupAndRep.offer(parseNameAndRepetition(groupToken));
+		}
+
+	}
+
+	private HAPIPath parseNameAndRepetition(String nameAndRep) throws HL7Exception {
+		String repToken;
+		String structureName;
+		Integer structureRep = 0;
+		StringTokenizer segRepTokenizer = new StringTokenizer(nameAndRep, "()", false);
+		structureName = segRepTokenizer.nextToken();
+		try {
+			if (segRepTokenizer.hasMoreTokens()) {
+				repToken = segRepTokenizer.nextToken();
+				structureRep = (repToken.equals("#")) ? -1 : Integer.parseInt(repToken);
+			}
+		} catch (NumberFormatException e) {
+			throw new HL7Exception("Invalid integer next to  " + structureName);
+		}
+		return new HAPIPath(structureName, structureRep);
+	}
+
+	private void getField(Segment segment, int fieldNumber, int fieldRepetition, Location location) throws HL7Exception {
+		Type[] typeFields;
+
+		typeFields = segment.getField(fieldNumber);
 		if (fieldRepetition >= 0) {
-			accessField(fields[fieldRepetition], location);
+			accessField(typeFields[fieldRepetition], location);
 		} else {
-			for (Type field : fields) {
-				accessField(field, location);
+			for (Type typeField : typeFields) {
+				accessField(typeField, location);
 			}
 		}
 	}
@@ -235,9 +268,16 @@ public class StandardVisitor implements MessageVisitor {
 		}
 	}
 
-	private void visitComposites(Type[] types, Integer componentNumber, Location location) throws HL7Exception {
-		if (componentNumber >= 1) {
-			types[componentNumber - 1].accept(this, location);
+	private void visitComposites(Type[] types, HAPIPath hapiPath, Location location) throws HL7Exception {
+		int primitivetNumber = 0;
+		String compositeIndex = hapiPath.getStructureName();
+
+		if (!compositeIndex.equals("#")) {
+			primitivetNumber = Integer.parseInt(compositeIndex);
+		}
+
+		if (primitivetNumber > 0) {
+			types[primitivetNumber - 1].accept(this, location);
 		} else {
 			for (Type componentType : types) {
 				componentType.accept(this, location);

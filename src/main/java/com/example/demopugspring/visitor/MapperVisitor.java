@@ -31,25 +31,6 @@ import ca.uhn.hl7v2.model.Type;
 
 public class MapperVisitor implements MessageVisitor{
 
-	protected class HAPIPath {
-		private String structureName;
-		private Integer repetition;
-
-		public HAPIPath(String name, Integer repetition) {
-			structureName = name;
-			this.repetition = repetition;
-		}
-
-		public String getStructureName() {
-			return structureName;
-		}
-
-		public Integer getRepetition() {
-			return repetition;
-		}
-
-	}
-
 	private boolean itsSubComponent = false;
 	private Queue<HAPIPath> groupAndRep;
 	private HAPIPath field;
@@ -70,7 +51,7 @@ public class MapperVisitor implements MessageVisitor{
 		HAPIPath element = groupAndRep.poll();
 
 		if (element == null) {
-			throw new HL7Exception("Wrong path specified.");
+			throw new HL7Exception(HAPIPath.WRONG_PATH);
 		}
 
 		int elementRep = element.getRepetition();
@@ -100,7 +81,7 @@ public class MapperVisitor implements MessageVisitor{
 		HAPIPath element = groupAndRep.poll();
 
 		if (element == null) {
-			throw new HL7Exception("Wrong path specified.");
+			throw new HL7Exception(HAPIPath.WRONG_PATH);
 		}
 
 		int elementRep = element.getRepetition();
@@ -129,7 +110,7 @@ public class MapperVisitor implements MessageVisitor{
 		String fieldName;
 		int fieldNumber;
 		if (this.field == null) {
-			throw new HL7Exception("Wrong path specified.");
+			throw new HL7Exception(HAPIPath.WRONG_PATH);
 		}
 
 		fieldName = this.field.getStructureName();
