@@ -7,12 +7,15 @@ import ca.uhn.hl7v2.util.Terser;
 public class MatchesValueFilter implements Filter {
 
     private static final String PARSE_TOKEN = "=";
+    private static final String NOT_OPERATOR = "!";
     private String valueToCheck;
+    private boolean negativize;
 
-    public MatchesValueFilter(String valueToCheck, Terser tmp) throws HL7Exception {
+    public MatchesValueFilter(String value, Terser tmp) throws HL7Exception {
 
-        this.valueToCheck = parseValue(valueToCheck, tmp);
-
+        this.valueToCheck = parseValue(value, tmp);
+        negativize = value.contains(NOT_OPERATOR);
+        this.valueToCheck = valueToCheck.replace(NOT_OPERATOR, "");
 	}
 
     private String parseValue(String value, Terser tmp) throws HL7Exception {
@@ -41,7 +44,7 @@ public class MatchesValueFilter implements Filter {
 		} else {
 			primitiveHasCondition = primitive.getValue().matches(valueToCheck);
 		}
-		return primitiveHasCondition;
+        return primitiveHasCondition ^ negativize;
 	}
 
 }
