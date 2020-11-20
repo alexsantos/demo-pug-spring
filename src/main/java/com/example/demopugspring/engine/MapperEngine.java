@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demopugspring.controller.IntegrationRestController;
+import com.example.demopugspring.engine.operation.AbstractOperation;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.filter.MatchesValueFilter;
 import com.example.demopugspring.model.Integration;
@@ -41,22 +41,25 @@ import ca.uhn.hl7v2.util.Terser;
 @Service
 public class MapperEngine {
 
-    private static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
-    
-    @Autowired
-    IdentificationCodes identificationCodes;
-    @Autowired
-    FacilitiesCodes facilitiesCodes;
-    @Autowired
-    CountryCodes countryCodes;
-    @Autowired
-    MarriageStatusCodes marriageStatusCodes;
-    @Autowired
-    IntegrationService integrationService;
-    @Autowired
-    ApplicationService applicationService;
-    @Autowired
-    MessageService messageService;
+	private static final String OPERATIONS_PACKAGE = "operation";
+
+	private static final Logger log = LoggerFactory.getLogger(MapperEngine.class);
+
+	@Autowired
+	IdentificationCodes identificationCodes;
+	@Autowired
+	FacilitiesCodes facilitiesCodes;
+	@Autowired
+	CountryCodes countryCodes;
+	@Autowired
+	MarriageStatusCodes marriageStatusCodes;
+	@Autowired
+	IntegrationService integrationService;
+	@Autowired
+	ApplicationService applicationService;
+	@Autowired
+	MessageService messageService;
+
 
     /*
     private static String v24message = "MSH|^~\\&|GH|HCIS|DOTLOGIC|HCIS|20200709192254||OMG^O19|37272407|P|2.4|||AL\r"
@@ -70,17 +73,15 @@ public class MapperEngine {
 
 
 	
-	
 	private void textFields(String field, String text, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
 		MapperVisitor visitor;
 
 		visitor =  new MapperVisitor(field,  text);
 		visitor.start(decodedMessage.getSegment(field.split("-")[0]).getMessage());
-	
 	}
 	
 
-	public void transcode(Terser msg, Terser tmp,List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
+	public void transcode(Terser tmp, List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
 		TranscodingVisitor transcodeVisitor;
 		Codes codeInterface;
 		PropertiesCategoriesEnum property = PropertiesCategoriesEnum.valueOfProperty(value);
@@ -331,14 +332,15 @@ public class MapperEngine {
 						fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
 						break;
 					case AFTER_SWAP:
-						swapAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapper.getCategory(), errorList);
+						swapAfterOperarion(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
 						break;
-                    case TRANSCODING:
-                        transcode(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
-                        break;
-                    case CLEAR_IF:
-                    	clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
-                    	break;
+					case CLEAR_IF:
+						clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
+					case TRANSCODING:
+                        transcode(tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
+
 					case REPLACE:
 						replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
 						break;
