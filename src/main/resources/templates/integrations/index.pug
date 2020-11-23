@@ -43,7 +43,7 @@ html(lang="en")
                                             td
                                                 a(href="/integrations/" + item.id)=item.resultMessage.code + "-" + item.resultMessage.event + " / " + item.resultMessage.version.getValue()
                                             td
-                                                a.pure-button.button-small(href="#")
+                                                a.pure-button.button-small(href="/integrations/edit?id=" + item.id)
                                                     i.fas.fa-pencil-alt
 
     include ../includes/footer

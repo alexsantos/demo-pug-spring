@@ -1,6 +1,7 @@
 package com.example.demopugspring.controller;
 
 import com.example.demopugspring.helper.PugHelper;
+import com.example.demopugspring.model.Application;
 import com.example.demopugspring.model.Integration;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.service.ApplicationService;
@@ -55,7 +56,7 @@ public class IntegrationController {
 		return "integrations/create";
 	}
 
-	@PostMapping(value = "/integrations/create")
+	@PostMapping(value = {"/integrations/create", "/integrations/edit"})
 	public String addIntegration(Model model,
 								 @ModelAttribute("integration") Integration integration) {
 		try {
@@ -70,6 +71,15 @@ public class IntegrationController {
 			model.addAttribute("errorMessage", errorMessage);
 			return "integrations/index";
 		}
+	}
+
+	@GetMapping(value = {"/integrations/edit"})
+	public String showEditIntegration(Model model, @RequestParam("id") Long id) {
+		Integration integration = integrationService.findById(id);
+		model.addAttribute("messages", messageService.findAll());
+		model.addAttribute("applications", applicationService.findAll());
+		model.addAttribute("integration", integration);
+		return "integrations/edit";
 	}
 
 	@PostMapping(value = "/integrations/update")
