@@ -427,7 +427,11 @@ public class MapperEngine {
     }
 
     private String cleanMessage(String message) {
-        return message.replaceAll("\\|(~)*\\|", "||");
+		String messageContent = message.replaceAll("~(~)+", "~");
+		messageContent = messageContent.replace("|~", "|");
+		messageContent = messageContent.replace("~|", "|");
+
+		return messageContent;
     }
 
 

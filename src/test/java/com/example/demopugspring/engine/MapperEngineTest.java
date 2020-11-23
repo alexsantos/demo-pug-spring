@@ -1,20 +1,22 @@
 package com.example.demopugspring.engine;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.util.Terser;
-import com.example.demopugspring.factory.ContextSingleton;
-import com.example.demopugspring.model.Mapper.Category;
-import com.example.demopugspring.properties.CountryCodes;
-import com.example.demopugspring.properties.IdentificationCodes;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import com.example.demopugspring.factory.ContextSingleton;
+import com.example.demopugspring.model.Mapper.Category;
+import com.example.demopugspring.properties.CountryCodes;
+import com.example.demopugspring.properties.IdentificationCodes;
+
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.util.Terser;
 
 class MapperEngineTest {
 	@Mock
@@ -213,6 +215,45 @@ class MapperEngineTest {
 		assertEquals(toBeReturned, terserSpy.get("/PID-3(0)-4"));
 		assertEquals(toBeReturned2, terserSpy.get("/PID-3(1)-4"));
 
+	}
+
+	@Test
+	void testAfterField() throws HL7Exception {
+		String toBeReturned = "CUFC";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
+		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = { "/MSH-6" };
+		meng.fieldAfterOperation(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.AFTER_FIELD, errors);
+		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
+	}
+
+	@Test
+	void testTranscodingEmpty() throws HL7Exception {
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
+		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String toBeReturned = null;
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		outMessage.parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		List<MapperError> errors = Mockito.mock(List.class);
+		MapperEngine meng = new MapperEngine();
+		MapperEngine mengSpy = Mockito.spy(meng);
+
+		CountryCodes codes = Mockito.mock(CountryCodes.class);
+		Mockito.doReturn(toBeReturned).when(codes).getDecodeCode(Mockito.contains("1"));
+
+		String[] testeListaKeys = { "/PID-23" };
+		meng.countryCodes = codes;
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		assertEquals(toBeReturned, terserSpy.get("/PID-23-1"));
 	}
 
 	@Test
