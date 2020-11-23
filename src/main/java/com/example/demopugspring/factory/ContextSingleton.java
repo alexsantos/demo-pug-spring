@@ -5,15 +5,15 @@ import ca.uhn.hl7v2.HapiContext;
 
 public class ContextSingleton {
 
-    private static HapiContext singleton;
+	private static HapiContext singleton;
 
-    private ContextSingleton() {
-    }
+	private ContextSingleton() {
+	}
 
-    public static HapiContext getInstance() {
-        if(singleton == null) {
-            singleton = new DefaultHapiContext();
-        }
-        return singleton;
-    }
+	public static HapiContext getInstance() {
+		if (singleton == null) {
+			singleton = new DefaultHapiContext();
+		}
+		return singleton;
+	}
 }

@@ -1,29 +1,29 @@
 doctype
 html(lang="en")
-  include ../includes/header
-  body
-    #layout
-      a(href="#menu" id="menuLink" class="menu-link")
-        span
-      #menu
-        include ../includes/menu
-        +menu("mappers")
-      #main
-        .content
-          form.pure-form.pure-form-stacked(name="mappers" action="/mappers/create" method="POST")
-            fieldset
-            legend Create a new mapper
-            label(for="key1") Key 1
-            input.pure-input-2-3(type="text" id="key1" name="key")
-            label(for="key2") Key 2
-            input.pure-input-2-3(type="text" id="key2" name="key" placeholder="optional")
-            label(for="key3") Key 3
-            input.pure-input-2-3(type="text" id="key3" name="key" placeholder="optional")
-            label(for="value") Value
-            input(type="text" id="value" name="value")
-            label(for="category") Category
-            select(id="category" name="category")
-              each val in ["TEXT", "FIELD", "TRANSCODING", "SWAP", "SEGMENT", "JOIN", "NUMERIC","CONTACT", "AFTER_SWAP", "AFTER_FIELD","AFTER_JOIN_FIELDS", "CLEAR_IF","REPLACE","ADD_SNS"]
-                option= val
-            button.pure-button.pure-button-primary(type="submit") Create
-  include ../includes/footer
+    include ../includes/header
+    body
+        #layout
+            a(href="#menu" id="menuLink" class="menu-link")
+                span
+            #menu
+                include ../includes/menu
+                +menu("mappers")
+            #main
+                .content
+                    form.pure-form.pure-form-stacked(name="mappers" action="/mappers/create" method="POST")
+                        fieldset
+                        legend Create a new mapper
+                        label(for="key1") Key 1
+                        input.pure-input-2-3(type="text" id="key1" name="key")
+                        label(for="key2") Key 2
+                        input.pure-input-2-3(type="text" id="key2" name="key" placeholder="optional")
+                        label(for="key3") Key 3
+                        input.pure-input-2-3(type="text" id="key3" name="key" placeholder="optional")
+                        label(for="value") Value
+                        input(type="text" id="value" name="value")
+                        label(for="category") Category
+                        select(id="category" name="category")
+                            each val in ["TEXT", "FIELD", "TRANSCODING", "SWAP", "SEGMENT", "JOIN", "NUMERIC","CONTACT", "AFTER_SWAP", "AFTER_FIELD","AFTER_JOIN_FIELDS", "CLEAR_IF","REPLACE","ADD_SNS"]
+                                option= val
+                        button.pure-button.pure-button-primary(type="submit") Create
+    include ../includes/footer

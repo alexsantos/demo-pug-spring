@@ -1,43 +1,43 @@
 doctype
 html(lang="en")
-  include ../includes/header
-  body
-    #layout
-      a(href="#menu" id="menuLink" class="menu-link")
-        span
-      #menu
-        include ../includes/menu
-        +menu("applications")
-      #main
-        .content
-          .pure-g
-            .pure-u-1
-              p
-                a.pure-button.pure-button-primary(href="/applications/create") Create Application
-          .pure-g
-            .pure-u-1
-              h3 Applications
-          .pure-g
-            .pure-u-1
-              table.pure-table.pure-table-horizontal
-                thead
-                  tr
-                    th #
-                    th Code
-                    th Name
-                    th
-                tbody
-                  - if (!applications) applications = []
-                  each item in applications
-                    tr
-                      td=item.id
-                      td=item.code
-                      td=item.name
-                      td
-                        .pure-button-group(role="group")
-                          button.pure-button.button-small(onclick="location.href='/applications/edit?id=" + item.id + "'")
-                            i.fas.fa-pencil-alt
-                          button.pure-button.button-small(onclick="location.href='/applications/delete?id=" + item.id + "'")
-                            i.fas.fa-trash-alt
+    include ../includes/header
+    body
+        #layout
+            a(href="#menu" id="menuLink" class="menu-link")
+                span
+            #menu
+                include ../includes/menu
+                +menu("applications")
+            #main
+                .content
+                    .pure-g
+                        .pure-u-1
+                            p
+                                a.pure-button.pure-button-primary(href="/applications/create") Create Application
+                    .pure-g
+                        .pure-u-1
+                            h3 Applications
+                    .pure-g
+                        .pure-u-1
+                            table.pure-table.pure-table-horizontal
+                                thead
+                                    tr
+                                        th #
+                                        th Code
+                                        th Name
+                                        th
+                                tbody
+                                    - if (!applications) applications = []
+                                    each item in applications
+                                        tr
+                                            td=item.id
+                                            td=item.code
+                                            td=item.name
+                                            td
+                                                .pure-button-group(role="group")
+                                                    button.pure-button.button-small(onclick="location.href='/applications/edit?id=" + item.id + "'")
+                                                        i.fas.fa-pencil-alt
+                                                    button.pure-button.button-small(onclick="location.href='/applications/delete?id=" + item.id + "'")
+                                                        i.fas.fa-trash-alt
 
-  include ../includes/footer
+    include ../includes/footer

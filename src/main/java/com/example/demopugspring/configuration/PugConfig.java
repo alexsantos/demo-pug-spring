@@ -1,16 +1,15 @@
 package com.example.demopugspring.configuration;
 
-import java.nio.file.Paths;
-
+import de.neuland.pug4j.PugConfiguration;
+import de.neuland.pug4j.spring.template.SpringTemplateLoader;
+import de.neuland.pug4j.spring.view.PugViewResolver;
+import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.ViewResolver;
 
-import de.neuland.pug4j.PugConfiguration;
-import de.neuland.pug4j.spring.template.SpringTemplateLoader;
-import de.neuland.pug4j.spring.view.PugViewResolver;
-import de.neuland.pug4j.template.TemplateLoader;
+import java.nio.file.Paths;
 
 @Configuration
 public class PugConfig {

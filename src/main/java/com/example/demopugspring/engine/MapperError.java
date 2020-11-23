@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class MapperError {
-    private String field;
-    private String error;
+	private String field;
+	private String error;
 }

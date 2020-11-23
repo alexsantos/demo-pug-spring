@@ -1,15 +1,14 @@
 package com.example.demopugspring.engine.operation;
 
-import java.util.List;
-
-import com.example.demopugspring.engine.MapperEngine;
-import com.example.demopugspring.engine.MapperError;
-import com.example.demopugspring.visitor.StandardVisitor;
-
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.Type;
 import ca.uhn.hl7v2.util.Terser;
+import com.example.demopugspring.engine.MapperEngine;
+import com.example.demopugspring.engine.MapperError;
+import com.example.demopugspring.visitor.StandardVisitor;
+
+import java.util.List;
 
 public class Text extends AbstractOperation {
 

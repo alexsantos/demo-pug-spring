@@ -1,49 +1,49 @@
 doctype
 html(lang="en")
-  include ../includes/header
-  body
-    #layout
-      a(href="#menu" id="menuLink" class="menu-link")
-        span
-      #menu
-        include ../includes/menu
-        +menu("integrations")
-      #main
-        .content
-          .pure-g
-            .pure-u-1
-              p
-                a.pure-button.pure-button-primary(href="/integrations/create") Create Integration
-          .pure-g
-            .pure-u-1
-              h3 Integrations
-          .pure-g
-            .pure-u-1-1
-              table.pure-table.pure-table-horizontal
-                thead
-                  tr
-                    th #
-                    th Source Message / Version
-                    th Sending Application
-                    th Receiving Application
-                    th Result Message / Version
-                    th
-                tbody
-                  - if (!integrations) integrations = []
-                  each item in integrations
-                    tr
-                      td
-                        a(href="/integrations/"+item.id)=item.id
-                      td
-                        a(href="/integrations/"+item.id)=item.message.code + "-" + item.message.event + " / " + item.message.version.getValue()
-                      td
-                        a(href="/integrations/"+item.id)=item.sendingApp.code
-                      td
-                        a(href="/integrations/"+item.id)=item.receivingApp.code
-                      td
-                        a(href="/integrations/" + item.id)=item.resultMessage.code + "-" + item.resultMessage.event + " / " + item.resultMessage.version.getValue()
-                      td
-                        a.pure-button.button-small(href="#")
-                          i.fas.fa-pencil-alt
+    include ../includes/header
+    body
+        #layout
+            a(href="#menu" id="menuLink" class="menu-link")
+                span
+            #menu
+                include ../includes/menu
+                +menu("integrations")
+            #main
+                .content
+                    .pure-g
+                        .pure-u-1
+                            p
+                                a.pure-button.pure-button-primary(href="/integrations/create") Create Integration
+                    .pure-g
+                        .pure-u-1
+                            h3 Integrations
+                    .pure-g
+                        .pure-u-1-1
+                            table.pure-table.pure-table-horizontal
+                                thead
+                                    tr
+                                        th #
+                                        th Source Message / Version
+                                        th Sending Application
+                                        th Receiving Application
+                                        th Result Message / Version
+                                        th
+                                tbody
+                                    - if (!integrations) integrations = []
+                                    each item in integrations
+                                        tr
+                                            td
+                                                a(href="/integrations/" + item.id)=item.id
+                                            td
+                                                a(href="/integrations/" + item.id)=item.message.code + "-" + item.message.event + " / " + item.message.version.getValue()
+                                            td
+                                                a(href="/integrations/" + item.id)=item.sendingApp.code
+                                            td
+                                                a(href="/integrations/" + item.id)=item.receivingApp.code
+                                            td
+                                                a(href="/integrations/" + item.id)=item.resultMessage.code + "-" + item.resultMessage.event + " / " + item.resultMessage.version.getValue()
+                                            td
+                                                a.pure-button.button-small(href="#")
+                                                    i.fas.fa-pencil-alt
 
-  include ../includes/footer
+    include ../includes/footer

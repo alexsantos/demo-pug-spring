@@ -9,6 +9,7 @@ public class MatchesValueFilter implements Filter {
 	public MatchesValueFilter(String valueToCheck) {
 		this.valueToCheck = valueToCheck;
 	}
+
 	@Override
 	public boolean doFilter(Primitive primitive) {
 		boolean primitiveHasCondition = false;

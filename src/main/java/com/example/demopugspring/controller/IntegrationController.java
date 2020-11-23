@@ -19,75 +19,75 @@ import java.util.List;
 @Controller
 public class IntegrationController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    IntegrationService integrationService;
-    @Autowired
-    MapperService mapperService;
-    @Autowired
-    MessageService messageService;
-    @Autowired
-    ApplicationService applicationService;
+	@Autowired
+	IntegrationService integrationService;
+	@Autowired
+	MapperService mapperService;
+	@Autowired
+	MessageService messageService;
+	@Autowired
+	ApplicationService applicationService;
 
-    @GetMapping(value = "/integrations")
-    public String getIntegrations(Model model) {
-        List<Integration> integrations = integrationService.findAll();
-        model.addAttribute("integrations", integrations);
-        logger.info(integrations.toString());
-        return "integrations/index";
-    }
+	@GetMapping(value = "/integrations")
+	public String getIntegrations(Model model) {
+		List<Integration> integrations = integrationService.findAll();
+		model.addAttribute("integrations", integrations);
+		logger.info(integrations.toString());
+		return "integrations/index";
+	}
 
-    @GetMapping(value = "/integrations/{id}")
-    public String getIntegration(Model model, @PathVariable(name = "id") Long id) {
-        Integration integration = integrationService.findById(id);
-        List<Mapper> mappers = mapperService.findAll();
-        model.addAttribute("integration", integration);
-        model.addAttribute("mappers", mappers);
-        model.addAttribute("PugHelper", new PugHelper());
-        return "integrations/details";
-    }
+	@GetMapping(value = "/integrations/{id}")
+	public String getIntegration(Model model, @PathVariable(name = "id") Long id) {
+		Integration integration = integrationService.findById(id);
+		List<Mapper> mappers = mapperService.findAll();
+		model.addAttribute("integration", integration);
+		model.addAttribute("mappers", mappers);
+		model.addAttribute("PugHelper", new PugHelper());
+		return "integrations/details";
+	}
 
-    @GetMapping(value = {"/integrations/create"})
-    public String showAddIntegration(Model model) {
-        model.addAttribute("messages", messageService.findAll());
-        model.addAttribute("applications", applicationService.findAll());
-        return "integrations/create";
-    }
+	@GetMapping(value = {"/integrations/create"})
+	public String showAddIntegration(Model model) {
+		model.addAttribute("messages", messageService.findAll());
+		model.addAttribute("applications", applicationService.findAll());
+		return "integrations/create";
+	}
 
-    @PostMapping(value = "/integrations/create")
-    public String addIntegration(Model model,
-                                 @ModelAttribute("integration") Integration integration) {
-        try {
-            logger.info(integration.toString());
-            integrationService.save(integration);
-            return "redirect:/integrations";
-        } catch (Exception ex) {
-            // log exception first,
-            // then show error
-            String errorMessage = ex.getMessage();
-            logger.error(errorMessage);
-            model.addAttribute("errorMessage", errorMessage);
-            return "integrations/index";
-        }
-    }
+	@PostMapping(value = "/integrations/create")
+	public String addIntegration(Model model,
+								 @ModelAttribute("integration") Integration integration) {
+		try {
+			logger.info(integration.toString());
+			integrationService.save(integration);
+			return "redirect:/integrations";
+		} catch (Exception ex) {
+			// log exception first,
+			// then show error
+			String errorMessage = ex.getMessage();
+			logger.error(errorMessage);
+			model.addAttribute("errorMessage", errorMessage);
+			return "integrations/index";
+		}
+	}
 
-    @PostMapping(value = "/integrations/update")
-    public String updateIntegration(Model model,
-                                    @ModelAttribute("id") Long id,
-                                    @RequestParam(value = "mappers", required = false, defaultValue = "") List<Long> mappers) {
-        try {
-            logger.info("Integration ID:" + id);
-            integrationService.updateMappers(id, mappers);
-            model.addAttribute("success", "1");
-            return "redirect:/integrations/".concat(String.valueOf(id));
-        } catch (Exception ex) {
-            // log exception first,
-            // then show error
-            String errorMessage = ex.getMessage();
-            logger.error(errorMessage);
-            model.addAttribute("errorMessage", errorMessage);
-            return "integrations/".concat(String.valueOf(id));
-        }
-    }
+	@PostMapping(value = "/integrations/update")
+	public String updateIntegration(Model model,
+									@ModelAttribute("id") Long id,
+									@RequestParam(value = "mappers", required = false, defaultValue = "") List<Long> mappers) {
+		try {
+			logger.info("Integration ID:" + id);
+			integrationService.updateMappers(id, mappers);
+			model.addAttribute("success", "1");
+			return "redirect:/integrations/".concat(String.valueOf(id));
+		} catch (Exception ex) {
+			// log exception first,
+			// then show error
+			String errorMessage = ex.getMessage();
+			logger.error(errorMessage);
+			model.addAttribute("errorMessage", errorMessage);
+			return "integrations/".concat(String.valueOf(id));
+		}
+	}
 }

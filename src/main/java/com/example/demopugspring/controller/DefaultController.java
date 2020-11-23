@@ -12,32 +12,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Arrays;
-
 @Controller
 public class DefaultController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    MapperEngine mapperEngine;
+	@Autowired
+	MapperEngine mapperEngine;
 
-    @GetMapping(value = {"/", "/index"})
-    public String index(Model model) {
-        logger.info("Index...");
-        model.addAttribute("source", null);
-        return "index";
-    }
+	@GetMapping(value = {"/", "/index"})
+	public String index(Model model) {
+		logger.info("Index...");
+		model.addAttribute("source", null);
+		return "index";
+	}
 
-    @PostMapping(value = {"/", "/index"})
-    public String invoke(Model model,
-                         @RequestParam("source") String source) throws HL7Exception {
-        logger.info("invoke...");
-        model.addAttribute("source", source);
-        Response response = null;
-        response = mapperEngine.run(source);
-        model.addAttribute("response", response);
-        return "index";
-    }
+	@PostMapping(value = {"/", "/index"})
+	public String invoke(Model model,
+						 @RequestParam("source") String source) throws HL7Exception {
+		logger.info("invoke...");
+		model.addAttribute("source", source);
+		Response response = null;
+		response = mapperEngine.run(source);
+		model.addAttribute("response", response);
+		return "index";
+	}
 
 }

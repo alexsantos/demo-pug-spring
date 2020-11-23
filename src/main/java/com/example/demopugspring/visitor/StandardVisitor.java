@@ -1,32 +1,23 @@
 package com.example.demopugspring.visitor;
 
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.Location;
+import ca.uhn.hl7v2.model.*;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.Location;
-import ca.uhn.hl7v2.model.Composite;
-import ca.uhn.hl7v2.model.Field;
-import ca.uhn.hl7v2.model.Group;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.MessageVisitor;
-import ca.uhn.hl7v2.model.Primitive;
-import ca.uhn.hl7v2.model.Segment;
-import ca.uhn.hl7v2.model.Structure;
-import ca.uhn.hl7v2.model.Type;
-
 /**
  * This class is the main class for the visitor implementation, given a path it
  * creates the indexes and it's responsible for the route until reaching the
  * primitive that was suppose to achieve.
- * 
+ * <p>
  * While implementing new visitors you can extend this function and override the
  * desired function for example, if you want to change Primitives you can extend
  * this function and then Override the visit Primitive function to get the
  * specific functionality.
- * 
  */
 
 public class StandardVisitor implements MessageVisitor {
@@ -66,8 +57,7 @@ public class StandardVisitor implements MessageVisitor {
 
 		if (elementRep >= 0) {
 			structures[elementRep].accept(this, Location.UNKNOWN);
-		}
-		else {
+		} else {
 			for (Structure structure : structures) {
 				structure.accept(this, Location.UNKNOWN);
 			}
@@ -152,7 +142,7 @@ public class StandardVisitor implements MessageVisitor {
 
 	@Override
 	public boolean start(Composite type, Location location) throws HL7Exception {
-		Type[] types = type.getComponents(); 
+		Type[] types = type.getComponents();
 		HAPIPath hapiPath;
 		if (visitingTopComposite) {
 			hapiPath = subComponent;
@@ -160,8 +150,7 @@ public class StandardVisitor implements MessageVisitor {
 				throw new HL7Exception(HAPIPath.WRONG_PATH);
 			}
 			visitComposites(types, hapiPath, location);
-		}
-		else {
+		} else {
 			visitingTopComposite = true;
 			hapiPath = this.component;
 			if (hapiPath == null) {
@@ -194,9 +183,8 @@ public class StandardVisitor implements MessageVisitor {
 	 * it's with a given path retrieve each index of the tree, if the position
 	 * has a wildcard (#) it will perform all repetitions of that element,
 	 * example PID(#)-3-1 it will go for each PID to the position 3-1
-	 * 
-	 * @param spec
-	 *            - the path for a resource
+	 *
+	 * @param spec - the path for a resource
 	 * @return
 	 * @throws HL7Exception
 	 */
@@ -214,7 +202,7 @@ public class StandardVisitor implements MessageVisitor {
 	 * This method parses if the path given has groups and group reps indicators
 	 * If they do they will be parsed and will be added to the structure, for
 	 * last it will check and parse the segment and its rep if exists.
-	 * 
+	 *
 	 * @param segmentPathSpec
 	 * @throws HL7Exception
 	 */

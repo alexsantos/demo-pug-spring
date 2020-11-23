@@ -6,5 +6,5 @@ import com.example.demopugspring.model.Message;
 import org.springframework.data.repository.CrudRepository;
 
 public interface IntegrationRepository extends CrudRepository<Integration, Long> {
-    public Integration findByMessageAndSendingAppAndReceivingApp(Message message, Application sending, Application receiving);
+	public Integration findByMessageAndSendingAppAndReceivingApp(Message message, Application sending, Application receiving);
 }

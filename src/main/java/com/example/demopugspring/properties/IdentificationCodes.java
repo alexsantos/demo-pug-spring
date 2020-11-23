@@ -11,6 +11,6 @@ public class IdentificationCodes extends Codes {
 	public String getSuffix() {
 		return SUFFIX;
 	}
-	
+
 
 }
