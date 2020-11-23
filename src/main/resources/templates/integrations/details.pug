@@ -51,10 +51,7 @@ html(lang="en")
                                                 td=item.value
                                                 td=item.category
                                                 td
-                                                    if (integration.hasMapper(item.id))
-                                                        input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
-                                                    else
-                                                        input(type="checkbox" id="included" name="mappers" value=item.id)
+                                                   input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
                             p
                             table.pure-table.pure-table-horizontal
                                 thead
@@ -73,10 +70,7 @@ html(lang="en")
                                                 td=item.value
                                                 td=item.category
                                                 td
-                                                    if (integration.hasMapper(item.id))
-                                                        input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
-                                                    else
-                                                        input(type="checkbox" id="included" name="mappers" value=item.id)
+                                                   input(type="checkbox" id="included" name="mappers" value=item.id)
                             p
                                 button.pure-button.pure-button-primary(type="submit") Update Integration
     script.

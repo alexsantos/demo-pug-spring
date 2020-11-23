@@ -137,12 +137,15 @@ public class MapperVisitor implements MessageVisitor{
 		Type[] typeFields;
 		
 		typeFields = segment.getField(fieldNumber);
-		if(fieldRepetition >= 0){
-			accessField(typeFields[fieldRepetition], location);
-		}
-		else {
-			for (Type typeField : typeFields) {
-				accessField(typeField, location);
+		if (typeFields.length > 0) {
+			if (fieldRepetition >= 0) {
+				accessField(typeFields[fieldRepetition], location);
+				noSubComponent();
+			} else {
+ 				for (Type typeField : typeFields) {
+					accessField(typeField, location);
+					noSubComponent();
+				}
 			}
 		}
 	}
@@ -194,7 +197,6 @@ public class MapperVisitor implements MessageVisitor{
 			}
 
 			visitComposites(types, hapiPath, location);
-
 		}
 		return false;
 	}
@@ -220,7 +222,6 @@ public class MapperVisitor implements MessageVisitor{
 
 	@Override
 	public boolean end(Composite type, Location location) throws HL7Exception {
-		noSubComponent();
 		return false;
 	}
 	

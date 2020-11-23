@@ -1,13 +1,21 @@
 package com.example.demopugspring.visitor;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.Location;
-import ca.uhn.hl7v2.model.*;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
+
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.Location;
+import ca.uhn.hl7v2.model.Composite;
+import ca.uhn.hl7v2.model.Field;
+import ca.uhn.hl7v2.model.Group;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.MessageVisitor;
+import ca.uhn.hl7v2.model.Primitive;
+import ca.uhn.hl7v2.model.Segment;
+import ca.uhn.hl7v2.model.Structure;
+import ca.uhn.hl7v2.model.Type;
 
 /**
  * This class is the main class for the visitor implementation, given a path it
@@ -164,7 +172,6 @@ public class StandardVisitor implements MessageVisitor {
 
 	@Override
 	public boolean end(Composite type, Location location) throws HL7Exception {
-		visitingTopComposite = false;
 		return false;
 	}
 
@@ -257,11 +264,15 @@ public class StandardVisitor implements MessageVisitor {
 		Type[] typeFields;
 
 		typeFields = segment.getField(fieldNumber);
-		if (fieldRepetition >= 0) {
-			accessField(typeFields[fieldRepetition], location);
-		} else {
-			for (Type typeField : typeFields) {
-				accessField(typeField, location);
+		if (typeFields.length > 0) {
+			if (fieldRepetition >= 0) {
+				accessField(typeFields[fieldRepetition], location);
+				visitingTopComposite = false;
+			} else {
+				for (Type typeField : typeFields) {
+					accessField(typeField, location);
+					visitingTopComposite = false;
+				}
 			}
 		}
 	}
