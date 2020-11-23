@@ -191,11 +191,29 @@ public class StandardVisitor implements MessageVisitor {
 	private void getIndexs(String spec) throws HL7Exception {
 		StringTokenizer tok = new StringTokenizer(spec, "-", false);
 		parseSegmentPathSpec(tok.nextToken());
-		field = parseNameAndRepetition(tok.nextToken());
-		component = parseNameAndRepetition(tok.nextToken());
+		field = parsePath(tok);
+		component = parsePath(tok);
+		subComponent = parsePath(tok);
+	}
+
+	/**
+	 * Parses the path of the given tokenizer, if the tokenizer has a valid
+	 * value it will create the respective HAPIPath otherwise it will create a
+	 * default one
+	 * 
+	 * @param tok
+	 * @return
+	 * @throws HL7Exception
+	 */
+	private HAPIPath parsePath(StringTokenizer tok) throws HL7Exception {
+		HAPIPath result;
 		if (tok.hasMoreTokens()) {
-			subComponent = parseNameAndRepetition(tok.nextToken());
+			result = parseNameAndRepetition(tok.nextToken());
+		} else {
+			result = new HAPIPath();
 		}
+
+		return result;
 	}
 
 	/**

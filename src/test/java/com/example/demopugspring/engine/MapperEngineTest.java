@@ -215,6 +215,25 @@ class MapperEngineTest {
 
 	}
 
+	@Test
+	void testReplaceOpearion() throws HL7Exception {
+		String messageString = "MSH|^~\\&|GH|CCA|ehCOS|CCA|20201112103816||ADT^A31|1601940378|P|2.4|||AL\r\n"
+				+ "PID|||59594292^^^JMS^NS~1234^^^CCA^NS~1234553^^^HCD^NS~883885^^^CUFP^NS~123456789^^^NIF^PT~22810278800^^^N_BENEF^~32169833^^^N_BI^||TESTE^JULIA BABO CORREIA||19910302000000|F|||RUA DO 4 DE TESTE, N\\XBA\\ 88, 3\\XBA\\ DTO^^LISBOA^11^1350-275^1||^^PH^^^^^^^^^999999999~^^X.400^juliap@gmail.com|||U|||999999999||||PORTUGAL|||||1^PORTUGAL||N\r\n";
+
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		outMessage.parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		List<MapperError> errors = Mockito.mock(List.class);
+		MapperEngine meng = new MapperEngine();
+
+		String[] testeListaKeys = { "/PID-7" };
+		meng.replaceOperation(terserSpy, Arrays.asList(testeListaKeys), "(00)+", errors);
+
+		assertEquals("19910302", terserSpy.get("/PID-7"));
+	}
+
 
 	@Test
 	void testJoinFieldsPatient() throws HL7Exception {

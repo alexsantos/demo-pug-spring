@@ -182,7 +182,6 @@ pipeline {
           }
         }
         stage("push image PROD"){
-          when { expression { get_branch_type("${env.BRANCH_NAME}")=="master" } }
           steps{
             sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
           }
