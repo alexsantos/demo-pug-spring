@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -56,6 +57,20 @@ public class IntegrationController {
 		return "integrations/create";
 	}
 
+	@GetMapping(value = {"/integrations/edit"})
+	public String showEditIntegration(Model model, @RequestParam("id") Long id) {
+		Integration integration = integrationService.findById(id);
+		List<Long> mappers = new ArrayList<>();
+		for (Mapper mapper : integration.getMappers()) {
+			mappers.add(mapper.getId());
+		}
+		model.addAttribute("messages", messageService.findAll());
+		model.addAttribute("applications", applicationService.findAll());
+		model.addAttribute("integration", integration);
+		model.addAttribute("mappers", mappers);
+		return "integrations/edit";
+	}
+
 	@PostMapping(value = {"/integrations/create", "/integrations/edit"})
 	public String addIntegration(Model model,
 								 @ModelAttribute("integration") Integration integration) {
@@ -71,15 +86,6 @@ public class IntegrationController {
 			model.addAttribute("errorMessage", errorMessage);
 			return "integrations/index";
 		}
-	}
-
-	@GetMapping(value = {"/integrations/edit"})
-	public String showEditIntegration(Model model, @RequestParam("id") Long id) {
-		Integration integration = integrationService.findById(id);
-		model.addAttribute("messages", messageService.findAll());
-		model.addAttribute("applications", applicationService.findAll());
-		model.addAttribute("integration", integration);
-		return "integrations/edit";
 	}
 
 	@PostMapping(value = "/integrations/update")
