@@ -256,6 +256,17 @@ public class MapperEngine {
         }
     }
 
+	public void textIf(Terser msg, Terser tmp, List<String> fields, String value, List<MapperError> errorList) throws HL7Exception {
+		String key = fields.get(0);
+		String ifKey = fields.get(1);
+		String ifRegex = fields.get(2);
+
+		String ifValue = tmp.get(ifKey);
+		if (ifValue.matches(ifRegex)) {
+			tmp.set(key, value);
+		}
+	}
+
     public Response run(String incomingMessage) {
         String result = "";
         Response response = new Response();
@@ -368,6 +379,9 @@ public class MapperEngine {
                         case REPLACE:
                             replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
                             break;
+					case TEXT_IF:
+						textIf(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
                         default:
                             errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapperCategory));
                     }
