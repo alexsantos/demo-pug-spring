@@ -42,5 +42,6 @@ html(lang="en")
                                     else
                                         option(value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
                             input(type="hidden" name="id" value=integration.id)
+                            input(type="hidden" name="mappers" value=mappers)
                             button.pure-button.pure-button-primary(type="submit") Update
     include ../includes/footer
