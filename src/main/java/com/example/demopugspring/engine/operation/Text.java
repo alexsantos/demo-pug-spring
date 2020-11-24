@@ -1,18 +1,19 @@
 package com.example.demopugspring.engine.operation;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.Type;
-import ca.uhn.hl7v2.util.Terser;
+import java.util.List;
+
 import com.example.demopugspring.engine.MapperEngine;
 import com.example.demopugspring.engine.MapperError;
 import com.example.demopugspring.visitor.StandardVisitor;
 
-import java.util.List;
+import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.Type;
+import ca.uhn.hl7v2.util.Terser;
 
 /**
  * This Operation inserts the text in {@link AbstractOperation#value} at the
- * path specified in each key included in {@link AbstractOperation#keys},
+ * path specified in the first key included in {@link AbstractOperation#keys},
  * replacing any previous content in the message.
  * </p>
  * If the key contains the '#' character, instead of using

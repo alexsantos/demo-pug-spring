@@ -14,9 +14,9 @@ import ca.uhn.hl7v2.util.Terser;
 
 /**
  * This operation inserts/replaces the value of the message at the path given by
- * each key in {@link AbstractOperation#keys}, with the value at the path given
- * by {@link AbstractOperation#value}, replacing any previous content in the
- * message.
+ * the first key in {@link AbstractOperation#keys}, with the value at the path
+ * given by {@link AbstractOperation#value}, replacing any previous content in
+ * the message.
  * </p>
  * If the key contains the '#' character, instead of using
  * {@link ca.uhn.hl7v2.util.Terser}, it will use

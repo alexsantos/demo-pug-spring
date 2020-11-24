@@ -1,23 +1,22 @@
 package com.example.demopugspring.engine.operation;
 
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.util.Terser;
-import com.example.demopugspring.engine.MapperEngine;
-import com.example.demopugspring.engine.MapperError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.example.demopugspring.engine.MapperEngine;
+import com.example.demopugspring.engine.MapperError;
+
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.util.Terser;
+
 /**
  * This abstract class serves as the base for any Operation to be applied to an
- * HL7 message. By default, {@link #map()} calls {@link #mapKey(String)} for
- * each in {@link #keys}. So, in order to implement this class, one would only
- * need to implement method {@link #mapKey(String)}. If, for some reason, a
- * different behavior is needed and keys are not meant to be iterated, one can
- * override {@link #map()} directly and change the message there.
+ * HL7 message. In order to implement this class, one would only need to
+ * implement method {@link #map()}.
  * </p>
  * An example of implementing this class can be seen at {@link Text}.
  * </p>
