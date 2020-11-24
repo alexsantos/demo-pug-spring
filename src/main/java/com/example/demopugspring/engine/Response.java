@@ -10,6 +10,6 @@ import java.util.List;
 @Setter
 @ToString
 public class Response {
-    List<MapperError> errorList;
-    String message;
+	List<MapperError> errorList;
+	String message;
 }

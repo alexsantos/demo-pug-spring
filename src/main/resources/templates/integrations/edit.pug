@@ -1,0 +1,46 @@
+doctype
+html(lang="en")
+    include ../includes/header
+    body
+        #layout
+            a(href="#menu" id="menuLink" class="menu-link")
+                span
+            #menu
+                include ../includes/menu
+                +menu("integrations")
+            #main
+                .content
+                    form.pure-form.pure-form-stacked(name="integration" action="/integrations/edit" method="POST")
+                        fieldset
+                            legend Update an Integration
+                            label(for="message") Source Message
+                            select(id="message" name="message")
+                                each message in messages
+                                    if (message.id == integration.message.id)
+                                        option(selected value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
+                                    else
+                                        option(value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
+                            label(for="sendingApp") Sending Application
+                            select(id="sendingApp" name="sendingApp")
+                                each application in applications
+                                    if (application.id == integration.sendingApp.id)
+                                        option(selected value=application.id)= application.code
+                                    else
+                                        option(value=application.id)= application.code
+                            label(for="receivingApp") Receiving Application
+                            select(id="receivingApp" name="receivingApp")
+                                each application in applications
+                                    if (application.id == integration.receivingApp.id)
+                                        option(selected value=application.id)= application.code
+                                    else
+                                        option(value=application.id)= application.code
+                            label(for="resultMessage") Result Message
+                            select(id="resultMessage" name="resultMessage")
+                                each message in messages
+                                    if (message.id == integration.resultMessage.id)
+                                        option(selected value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
+                                    else
+                                        option(value=message.id)= message.code + "-" + message.event + " / " + message.version.getValue()
+                            input(type="hidden" name="id" value=integration.id)
+                            button.pure-button.pure-button-primary(type="submit") Update
+    include ../includes/footer

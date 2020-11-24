@@ -22,12 +22,11 @@ import ca.uhn.hl7v2.model.Type;
  * This class is the main class for the visitor implementation, given a path it
  * creates the indexes and it's responsible for the route until reaching the
  * primitive that was suppose to achieve.
- * 
+ * <p>
  * While implementing new visitors you can extend this function and override the
  * desired function for example, if you want to change Primitives you can extend
  * this function and then Override the visit Primitive function to get the
  * specific functionality.
- * 
  */
 
 public class StandardVisitor implements MessageVisitor {
@@ -174,7 +173,6 @@ public class StandardVisitor implements MessageVisitor {
 
 	@Override
 	public boolean end(Composite type, Location location) throws HL7Exception {
-		visitingTopComposite = false;
 		return false;
 	}
 
@@ -193,9 +191,8 @@ public class StandardVisitor implements MessageVisitor {
 	 * it's with a given path retrieve each index of the tree, if the position
 	 * has a wildcard (#) it will perform all repetitions of that element,
 	 * example PID(#)-3-1 it will go for each PID to the position 3-1
-	 * 
-	 * @param spec
-	 *            - the path for a resource
+	 *
+	 * @param spec - the path for a resource
 	 * @return
 	 * @throws HL7Exception
 	 */
@@ -231,7 +228,7 @@ public class StandardVisitor implements MessageVisitor {
 	 * This method parses if the path given has groups and group reps indicators
 	 * If they do they will be parsed and will be added to the structure, for
 	 * last it will check and parse the segment and its rep if exists.
-	 * 
+	 *
 	 * @param segmentPathSpec
 	 * @throws HL7Exception
 	 */
@@ -268,11 +265,15 @@ public class StandardVisitor implements MessageVisitor {
 		Type[] typeFields;
 
 		typeFields = segment.getField(fieldNumber);
-		if (fieldRepetition >= 0) {
-			accessField(typeFields[fieldRepetition], location);
-		} else {
-			for (Type typeField : typeFields) {
-				accessField(typeField, location);
+		if (typeFields.length > 0) {
+			if (fieldRepetition >= 0) {
+				accessField(typeFields[fieldRepetition], location);
+				visitingTopComposite = false;
+			} else {
+				for (Type typeField : typeFields) {
+					accessField(typeField, location);
+					visitingTopComposite = false;
+				}
 			}
 		}
 	}

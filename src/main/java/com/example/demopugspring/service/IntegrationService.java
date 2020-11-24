@@ -16,40 +16,40 @@ import java.util.List;
 @Service
 public class IntegrationService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private IntegrationRepository integrationRepository;
+	@Autowired
+	private IntegrationRepository integrationRepository;
 
-    @Autowired
-    private MapperService mapperService;
+	@Autowired
+	private MapperService mapperService;
 
-    public List<Integration> findAll() {
-        List<Integration> integrations = new ArrayList<>();
-        integrationRepository.findAll().forEach(integrations::add);
-        return integrations;
-    }
+	public List<Integration> findAll() {
+		List<Integration> integrations = new ArrayList<>();
+		integrationRepository.findAll().forEach(integrations::add);
+		return integrations;
+	}
 
-    public Integration findById(Long id) {
-        return integrationRepository.findById(id).orElseThrow();
-    }
+	public Integration findById(Long id) {
+		return integrationRepository.findById(id).orElseThrow();
+	}
 
-    public Integration save(Integration integration) {
-        return integrationRepository.save(integration);
-    }
+	public Integration save(Integration integration) {
+		return integrationRepository.save(integration);
+	}
 
-    public Integration updateMappers(Long id, List<Long> mapperIds) {
-        Integration integration = findById(id);
-        List<Mapper> mappers = new ArrayList<>();
-        for (Long item : mapperIds) {
-            mappers.add(mapperService.findById(item));
-        }
-        logger.info(mappers.toString());
-        integration.setMappers(mappers);
-        return save(integration);
-    }
+	public Integration updateMappers(Long id, List<Long> mapperIds) {
+		Integration integration = findById(id);
+		List<Mapper> mappers = new ArrayList<>();
+		for (Long item : mapperIds) {
+			mappers.add(mapperService.findById(item));
+		}
+		logger.info(mappers.toString());
+		integration.setMappers(mappers);
+		return save(integration);
+	}
 
-    public Integration findByMessageAndApplications(Message message, Application sending, Application receiving) {
-        return integrationRepository.findByMessageAndSendingAppAndReceivingApp(message, sending, receiving);
-    }
+	public Integration findByMessageAndApplications(Message message, Application sending, Application receiving) {
+		return integrationRepository.findByMessageAndSendingAppAndReceivingApp(message, sending, receiving);
+	}
 }

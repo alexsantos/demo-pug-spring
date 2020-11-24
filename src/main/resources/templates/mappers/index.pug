@@ -1,42 +1,42 @@
 doctype
 html(lang="en")
-  include ../includes/header
-  body
-    #layout
-      a(href="#menu" id="menuLink" class="menu-link")
-        span
-      #menu
-        include ../includes/menu
-        +menu("mappers")
-      #main
-        .content
-          .pure-g
-            .pure-u-1
-              p
-                a.pure-button.pure-button-primary(href="/mappers/create") Create Mapper
-          .pure-g
-            .pure-u-1
-              h3 Mappers
-          .pure-g
-            .pure-u-1-1
-              table.pure-table.pure-table-horizontal
-                thead
-                  tr
-                    th #
-                    th Keys
-                    th Value
-                    th Category
-                    th 
-                tbody
-                    - if (!mappers) mappers = []
-                    each item in mappers
-                      tr
-                        td=item.id
-                        td=PugHelper.join(",", item.key)
-                        td=item.value
-                        td=item.category
-                        td
-                          a.pure-button.button-small(href="/mappers/edit?id="+item.id)
-                            i.fas.fa-pencil-alt
+    include ../includes/header
+    body
+        #layout
+            a(href="#menu" id="menuLink" class="menu-link")
+                span
+            #menu
+                include ../includes/menu
+                +menu("mappers")
+            #main
+                .content
+                    .pure-g
+                        .pure-u-1
+                            p
+                                a.pure-button.pure-button-primary(href="/mappers/create") Create Mapper
+                    .pure-g
+                        .pure-u-1
+                            h3 Mappers
+                    .pure-g
+                        .pure-u-1-1
+                            table.pure-table.pure-table-horizontal
+                                thead
+                                    tr
+                                        th #
+                                        th Keys
+                                        th Value
+                                        th Category
+                                        th
+                                tbody
+                                    - if (!mappers) mappers = []
+                                    each item in mappers
+                                        tr
+                                            td=item.id
+                                            td=PugHelper.join(",", item.key)
+                                            td=item.value
+                                            td=item.category
+                                            td
+                                                a.pure-button.button-small(href="/mappers/edit?id=" + item.id)
+                                                    i.fas.fa-pencil-alt
 
-  include ../includes/footer
+    include ../includes/footer

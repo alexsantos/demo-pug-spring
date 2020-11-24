@@ -11,28 +11,28 @@ import java.util.List;
 @Service
 public class MessageService {
 
-    @Autowired
-    private MessageRepository messageRepository;
+	@Autowired
+	private MessageRepository messageRepository;
 
-    public List<Message> findAll() {
-        List<Message> messages = new ArrayList<>();
-        messageRepository.findByOrderByCodeAscEventAscVersionAsc().forEach(messages::add);
-        return messages;
-    }
+	public List<Message> findAll() {
+		List<Message> messages = new ArrayList<>();
+		messageRepository.findByOrderByCodeAscEventAscVersionAsc().forEach(messages::add);
+		return messages;
+	}
 
-    public Message findById(Long id) {
-        return messageRepository.findById(id).orElseThrow();
-    }
+	public Message findById(Long id) {
+		return messageRepository.findById(id).orElseThrow();
+	}
 
-    public Message save(Message message) {
-        return messageRepository.save(message);
-    }
+	public Message save(Message message) {
+		return messageRepository.save(message);
+	}
 
-    public Message findByCodeAndEvent(String code, String event) {
-        return messageRepository.findByCodeAndEvent(code, event);
-    }
+	public Message findByCodeAndEvent(String code, String event) {
+		return messageRepository.findByCodeAndEvent(code, event);
+	}
 
-    public Message find(String code, String event, String version) {
-        return messageRepository.findByCodeAndEventAndVersion(code, event, Message.Version.fromString(version));
-    }
+	public Message find(String code, String event, String version) {
+		return messageRepository.findByCodeAndEventAndVersion(code, event, Message.Version.fromString(version));
+	}
 }

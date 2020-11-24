@@ -23,10 +23,9 @@ class MapperEngineTest {
 	List<MapperError> errors;
 
 
-
 	@Test
 	void testReplace() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n"+
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
 				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||198212090000|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
 
 		String toBeReturned = "19821209";
@@ -34,9 +33,9 @@ class MapperEngineTest {
 		outMessage.parse(messageString);
 		Terser t = new Terser(outMessage);
 		Terser terserSpy = Mockito.spy(t);
-		
+
 		MapperEngine meng = new MapperEngine();
-		String[] testeListaKeys = { "/PID-7", "/PID-13-7" };
+		String[] testeListaKeys = {"/PID-7", "/PID-13-7"};
 		meng.replaceOperation(terserSpy, Arrays.asList(testeListaKeys), "(00)*", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PID-7"));
 		assertEquals("9", terserSpy.get("/PID-13-7"));
@@ -45,20 +44,20 @@ class MapperEngineTest {
 
 	@Test
 	void testAddSNSOperation() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n"+
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
 				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
 		String toBeReturned = "1234512345";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
 		Terser t = new Terser(outMessage);
 		Terser terserSpy = Mockito.spy(t);
-		
+
 		Mockito.doReturn(toBeReturned).when(terserSpy).get(Mockito.contains("/PID-19"));
 
 
 		//outMessage.get(name, rep)
 		MapperEngine meng = new MapperEngine();
-		String[] testeListaKeys = { "/PID-3" };
+		String[] testeListaKeys = {"/PID-3"};
 		meng.addFieldSNS(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/PID-19", errors);
 		assertEquals(toBeReturned, terserSpy.get("PID-3(2)"));
 		assertEquals("SNS", terserSpy.get("PID-3(2)-4"));
@@ -79,7 +78,7 @@ class MapperEngineTest {
 
 
 		MapperEngine meng = new MapperEngine();
-		String[] testeListaKeys = { "/PID" };
+		String[] testeListaKeys = {"/PID"};
 		String field = testeListaKeys[0];
 		meng.addContactRepetitions(terserSpy, field, terserSpy.get(field + "-13-7-1"), terserSpy.get(field + "-13-12-1"), terserSpy.get(field + "-14-7-1"), terserSpy.get(field + "-13-4-1"));
 		assertEquals("X.400", terserSpy.get("PID-13(2)-3"));
@@ -102,7 +101,7 @@ class MapperEngineTest {
 
 
 		MapperEngine meng = new MapperEngine();
-		String[] testeListaKeys = { "/PID-3(#)-4" };
+		String[] testeListaKeys = {"/PID-3(#)-4"};
 		meng.clearIfOperation(terserSpy, Arrays.asList(testeListaKeys), toFilter, errors);
 		assertEquals(null, terserSpy.get("PID-3(1)-1"));
 	}
@@ -118,7 +117,7 @@ class MapperEngineTest {
 		Terser terserSpy = Mockito.spy(t);
 
 		MapperEngine meng = new MapperEngine();
-		String[] testeListaKeys = { "/PATIENT/PID-3(#)-4" };
+		String[] testeListaKeys = {"/PATIENT/PID-3(#)-4"};
 		meng.clearIfOperation(terserSpy, Arrays.asList(testeListaKeys), toFilter, errors);
 		assertEquals(null, terserSpy.get("/PATIENT/PID-3(1)-1"));
 	}
@@ -138,7 +137,7 @@ class MapperEngineTest {
 		List<MapperError> errors = Mockito.mock(List.class);
 		// outMessage.get(name, rep)
 		MapperEngine meng = new MapperEngine();
-		String[] testeListaKeys = { "/PATIENT/PID-3" };
+		String[] testeListaKeys = {"/PATIENT/PID-3"};
 		meng.addFieldSNS(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/PATIENT/PID-19", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PATIENT/PID-3(2)"));
 		assertEquals("SNS", terserSpy.get("/PATIENT/PID-3(2)-4"));
@@ -161,7 +160,7 @@ class MapperEngineTest {
 		CountryCodes codes = Mockito.mock(CountryCodes.class);
 		Mockito.doReturn(toBeReturned).when(codes).getDecodeCode(Mockito.contains("1"));
 
-		String[] testeListaKeys = { "/PID-28" };
+		String[] testeListaKeys = {"/PID-28"};
 		meng.countryCodes = codes;
 		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PID-28-1"));
@@ -184,7 +183,7 @@ class MapperEngineTest {
 		CountryCodes codes = Mockito.mock(CountryCodes.class);
 		Mockito.doReturn(toBeReturned).when(codes).getDecodeCode(Mockito.contains("1"));
 
-		String[] testeListaKeys = { "/PATIENT/PID-28" };
+		String[] testeListaKeys = {"/PATIENT/PID-28"};
 		meng.countryCodes = codes;
 		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PATIENT/PID-28-1"));
@@ -210,12 +209,51 @@ class MapperEngineTest {
 		Mockito.doReturn(toBeReturned).when(codes).getDecodeCode(Mockito.contains("JMS"));
 		Mockito.doReturn(toBeReturned2).when(codes).getDecodeCode(Mockito.contains("CUFC"));
 
-		String[] testeListaKeys = { "/PID-3(#)-4" };
+		String[] testeListaKeys = {"/PID-3(#)-4"};
 		meng.identificationCodes = codes;
 		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "IDENTIFICATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PID-3(0)-4"));
 		assertEquals(toBeReturned2, terserSpy.get("/PID-3(1)-4"));
 
+	}
+
+	@Test
+	void testAfterField() throws HL7Exception {
+		String toBeReturned = "CUFC";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
+		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = { "/MSH-6" };
+		meng.fieldAfterOperation(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.AFTER_FIELD, errors);
+		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
+	}
+
+	@Test
+	void testTranscodingEmpty() throws HL7Exception {
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
+		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String toBeReturned = null;
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		outMessage.parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		List<MapperError> errors = Mockito.mock(List.class);
+		MapperEngine meng = new MapperEngine();
+		MapperEngine mengSpy = Mockito.spy(meng);
+
+		CountryCodes codes = Mockito.mock(CountryCodes.class);
+		Mockito.doReturn(toBeReturned).when(codes).getDecodeCode(Mockito.contains("1"));
+
+		String[] testeListaKeys = { "/PID-23" };
+		meng.countryCodes = codes;
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		assertEquals(toBeReturned, terserSpy.get("/PID-23-1"));
 	}
 
 	@Test
@@ -238,57 +276,57 @@ class MapperEngineTest {
 	}
 
 
-		@Test
-		void testJoinFieldsPatient() throws HL7Exception {
-			String toBeReturned = "995896186";
-			String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-					"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+	@Test
+	void testJoinFieldsPatient() throws HL7Exception {
+		String toBeReturned = "995896186";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
 
-			Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
-			Terser t = new Terser(outMessage);
-			Terser terserSpy = Mockito.spy(t);
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
 
-			MapperEngine meng = new MapperEngine();
-			String[] testeListaKeys = { "/PATIENT/PID-3" };
-			meng.joinFields(terserSpy, Arrays.asList(testeListaKeys), "/PATIENT/PID-4", errors);
-			assertEquals(toBeReturned, terserSpy.get("/PATIENT/PID-3(2)"));
-			assertEquals("NIF", terserSpy.get("/PATIENT/PID-3(2)-4"));
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = {"/PATIENT/PID-3"};
+		meng.joinFields(terserSpy, Arrays.asList(testeListaKeys), "/PATIENT/PID-4", errors);
+		assertEquals(toBeReturned, terserSpy.get("/PATIENT/PID-3(2)"));
+		assertEquals("NIF", terserSpy.get("/PATIENT/PID-3(2)-4"));
 
-		}
+	}
 
-		@Test
-		void testField() throws HL7Exception {
-			String toBeReturned = "CUFC";
-			String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-					"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+	@Test
+	void testField() throws HL7Exception {
+		String toBeReturned = "CUFC";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
 
-			Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
-			Terser t = new Terser(outMessage);
-			Terser terserSpy = Mockito.spy(t);
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
 
-			MapperEngine meng = new MapperEngine();
-			String[] testeListaKeys = { "/MSH-6" };
-			meng.mapper(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.FIELD, errors);
-			assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = {"/MSH-6"};
+		meng.mapper(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.FIELD, errors);
+		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
 
-		}
+	}
 
-		@Test
-		void testText() throws HL7Exception {
-			String toBeReturned = "INTEGRACAO";
-			String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-					"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+	@Test
+	void testText() throws HL7Exception {
+		String toBeReturned = "INTEGRACAO";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
 
-			Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
-			Terser t = new Terser(outMessage);
-			Terser terserSpy = Mockito.spy(t);
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
 
-			MapperEngine meng = new MapperEngine();
-			String[] testeListaKeys = { "/MSH-6" };
-			meng.mapper(terserSpy, terserSpy, Arrays.asList(testeListaKeys), toBeReturned, Category.TEXT, errors);
-			assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = {"/MSH-6"};
+		meng.mapper(terserSpy, terserSpy, Arrays.asList(testeListaKeys), toBeReturned, Category.TEXT, errors);
+		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
 
-		}
+	}
 
 
 }

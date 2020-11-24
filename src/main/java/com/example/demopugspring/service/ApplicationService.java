@@ -11,22 +11,24 @@ import java.util.List;
 @Service
 public class ApplicationService {
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+	@Autowired
+	private ApplicationRepository applicationRepository;
 
-    public List<Application> findAll() {
-        List<Application> applications = new ArrayList<>();
-        applicationRepository.findByOrderByCodeAsc().forEach(applications::add);
-        return applications;
-    }
-    public Application findById(Long id) {
-        return applicationRepository.findById(id).orElseThrow();
-    }
-    public Application save(Application application) {
-        return applicationRepository.save(application);
-    }
+	public List<Application> findAll() {
+		List<Application> applications = new ArrayList<>();
+		applicationRepository.findByOrderByCodeAsc().forEach(applications::add);
+		return applications;
+	}
 
-    public Application findByCode(String code) {
-        return applicationRepository.findByCode(code);
-    }
+	public Application findById(Long id) {
+		return applicationRepository.findById(id).orElseThrow();
+	}
+
+	public Application save(Application application) {
+		return applicationRepository.save(application);
+	}
+
+	public Application findByCode(String code) {
+		return applicationRepository.findByCode(code);
+	}
 }

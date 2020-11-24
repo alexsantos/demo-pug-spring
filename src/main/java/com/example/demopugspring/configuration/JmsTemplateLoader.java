@@ -1,17 +1,16 @@
 package com.example.demopugspring.configuration;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.file.Paths;
-
+import de.neuland.pug4j.template.TemplateLoader;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
-import de.neuland.pug4j.template.TemplateLoader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.file.Paths;
 
 public class JmsTemplateLoader implements TemplateLoader, ResourceLoaderAware {
 

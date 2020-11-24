@@ -12,23 +12,23 @@ import java.util.List;
 @Service
 public class MapperService {
 
-    @Autowired
-    private MapperRepository mapperRepository;
+	@Autowired
+	private MapperRepository mapperRepository;
 
-    public List<Mapper> findAll() {
-        List<Mapper> maps = new ArrayList<>();
-        mapperRepository.findAll().forEach(maps::add);
-        return maps;
-    }
+	public List<Mapper> findAll() {
+		List<Mapper> maps = new ArrayList<>();
+		mapperRepository.findAll().forEach(maps::add);
+		return maps;
+	}
 
-    public Mapper findById(Long id) {
-        return mapperRepository.findById(id).orElseThrow();
-    }
+	public Mapper findById(Long id) {
+		return mapperRepository.findById(id).orElseThrow();
+	}
 
-    public Mapper save(Mapper mapper) {
-        List<String> temp = mapper.getKey();
-        temp.removeAll(Collections.singleton(""));
-        mapper.setKey(temp);
-        return mapperRepository.save(mapper);
-    }
+	public Mapper save(Mapper mapper) {
+		List<String> temp = mapper.getKey();
+		temp.removeAll(Collections.singleton(""));
+		mapper.setKey(temp);
+		return mapperRepository.save(mapper);
+	}
 }

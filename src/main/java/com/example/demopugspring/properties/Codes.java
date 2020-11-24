@@ -7,10 +7,10 @@ public abstract class Codes {
 
 	@Autowired
 	private Environment env;
-	
+
 	public String getDecodeCode(String encodedCode) {
-		
-		if(encodedCode == null) {
+
+		if (encodedCode == null) {
 			encodedCode = "";
 		}
 		return env.getProperty(getSuffix() + "." + encodedCode);

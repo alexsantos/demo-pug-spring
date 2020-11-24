@@ -1,11 +1,10 @@
 package com.example.demopugspring.operation;
 
-import java.util.List;
-
-import com.example.demopugspring.visitor.ReplaceVisitor;
-
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
+import com.example.demopugspring.visitor.ReplaceVisitor;
+
+import java.util.List;
 
 public class ReplaceOperation implements Operation {
 

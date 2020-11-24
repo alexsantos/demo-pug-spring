@@ -1,17 +1,15 @@
 package com.example.demopugspring.engine.operation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.util.Terser;
+import com.example.demopugspring.engine.MapperEngine;
+import com.example.demopugspring.engine.MapperError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.example.demopugspring.engine.MapperEngine;
-import com.example.demopugspring.engine.MapperError;
-
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.util.Terser;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This abstract class serves as the base for any Operation to be applied to an
@@ -57,10 +55,6 @@ public abstract class AbstractOperation {
 		return useOriginalValue;
 	}
 
-	public List<MapperError> getErrors() {
-		return errors;
-	}
-
 	public AbstractOperation(MapperEngine engine, Message incomingMessage, Message outgoingMessage, Terser incomingTerser, Terser outgoingTerser, List<String> keys, String value) {
 
 		this.engine = engine;
@@ -82,6 +76,10 @@ public abstract class AbstractOperation {
 		} else {
 			this.value = value;
 		}
+	}
+
+	public List<MapperError> getErrors() {
+		return errors;
 	}
 
 	public void map() {
