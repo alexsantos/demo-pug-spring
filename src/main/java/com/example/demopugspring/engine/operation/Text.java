@@ -10,6 +10,17 @@ import com.example.demopugspring.visitor.StandardVisitor;
 
 import java.util.List;
 
+/**
+ * This Operation inserts the text in {@link AbstractOperation#value} at the
+ * path specified in each key included in {@link AbstractOperation#keys},
+ * replacing any previous content in the message.
+ * </p>
+ * If a key contains the '#' character, instead of using
+ * {@link ca.uhn.hl7v2.util.Terser}, it will use
+ * {@link com.example.demopugspring.visitor.StandardVisitor} to get the types to
+ * be changed.
+ *
+ */
 public class Text extends AbstractOperation {
 
 	public Text(MapperEngine engine, Message incomingMessage, Message outgoingMessage, Terser incomingTerser, Terser outgoingTerser, List<String> keys, String value) {
@@ -17,7 +28,7 @@ public class Text extends AbstractOperation {
 	}
 
 	@Override
-	public void mapKey(String key) {
+	protected void mapKey(String key) {
 		try {
 			if (key.contains("#")) {
 				StandardVisitor visitor = new StandardVisitor(key);
@@ -33,5 +44,4 @@ public class Text extends AbstractOperation {
 			errors.add(new MapperError(key, e.getMessage()));
 		}
 	}
-
 }

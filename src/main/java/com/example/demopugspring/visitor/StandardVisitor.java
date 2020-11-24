@@ -2,6 +2,7 @@ package com.example.demopugspring.visitor;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -181,7 +182,7 @@ public class StandardVisitor implements MessageVisitor {
 		return false;
 	}
 
-	public ArrayList<Type> getVisitedTypes() {
+	public List<Type> getVisitedTypes() {
 		return visitedTypes;
 	}
 
