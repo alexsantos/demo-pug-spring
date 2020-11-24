@@ -79,7 +79,10 @@ pipeline {
     maven 'Maven-Default'
   }
   stages{
-    stage("read Version"){
+    
+    stage('Configurations') {
+      parallel {
+          stage("read Version"){
       steps{
         script {
           VERSION_POM =readMavenPom().getVersion()
@@ -97,8 +100,6 @@ pipeline {
         echo "Building in Registry ${env.BRANCH_NAME}"
       }
     }
-    stage('Configurations') {
-      parallel {
         stage('Check Snapshots') {
           when { anyOf {expression { get_branch_type("${env.BRANCH_NAME}")=="master" }; expression { get_branch_type("${env.BRANCH_NAME}")=="release" }}}
           steps {
@@ -111,32 +112,24 @@ pipeline {
         }    
       }
     }
-
-    stage('Change version') {
-      when { expression { get_branch_type("${env.BRANCH_NAME}")=="feature" } }
+     stage('Verify Sonar') {
       steps{
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-          sh "mvn -gs $MAVEN_GLOBAL_SETTINGS versions:set -X -e -DnewVersion=${VERSION}"
-        }
-      }
-    }
-
-      stage('Change version hotfix') {
-      when { expression { get_branch_type("${env.BRANCH_NAME}")=="hotfix" } }
-      steps{
-        configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-          sh "mvn -gs $MAVEN_GLOBAL_SETTINGS versions:set -X -e -DnewVersion=${VERSION}"
+            withEnv(["JAVA_HOME=${tool 'jdk11'}/jdk-11", "PATH=${tool 'jdk11'}/jdk-11/bin:${env.PATH}"]) {
+                sh 'ls /var/jenkins_home/tools/hudson.model.JDK/jdk11/jdk-11'
+                sh "mvn clean verify sonar:sonar -Dsonar.projectKey=pt.jmellosaude:integration-java-spring-mapper -Dsonar.branch.name=master -Dsonar.host.url=http://sonarqube:9000/sonarqube/ -Dsonar.login=bfeefe00f132df731fc852005c4d8bf7adb75b22"
+            }
         }
       }
     }
     stage('Build jar') {
       steps{
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-              withEnv(["JAVA_HOME=${tool 'jdk11'}/jdk-11", "PATH=${tool 'jdk11'}/jdk-11/bin:${env.PATH}"]) {
-                    echo "Building feature $JAVA_HOME"
-            sh 'ls /var/jenkins_home/tools/hudson.model.JDK/jdk11/jdk-11'
-          sh "mvn package"
-              }
+            withEnv(["JAVA_HOME=${tool 'jdk11'}/jdk-11", "PATH=${tool 'jdk11'}/jdk-11/bin:${env.PATH}"]) {
+                echo "Building feature $JAVA_HOME"
+                sh 'ls /var/jenkins_home/tools/hudson.model.JDK/jdk11/jdk-11'
+                sh "mvn package "
+            }
         }
       }
     }
@@ -145,42 +138,12 @@ pipeline {
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
           withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
             sh "docker build --build-arg BASE_VERSION=${VERSION} -t ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} ."
-            sh "docker images"
           }
         }
       }
     }
     stage("push image to registry"){
       parallel {
-        stage("push image QUA"){
-          when { expression { get_branch_type("${env.BRANCH_NAME}")=="release" } }
-          steps{
-            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
-            sh "docker tag ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} ${REGISTRY}/${env.PROJECT_NAME}:latest"
-            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:latest"
-          }
-        }
-        stage("push image FEATURE"){
-          when { expression { get_branch_type("${env.BRANCH_NAME}")=="feature" } }
-          steps{
-            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
-          }
-        }
-        stage("push image DEV"){
-          when { expression { get_branch_type("${env.BRANCH_NAME}")=="develop" } }
-          steps{
-            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
-            sh "docker tag ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} ${REGISTRY}/${env.PROJECT_NAME}:latestsnapshot"
-            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:latestsnapshot"
-
-          }
-        }
-        stage("push image HOTFIX"){
-          when { expression { get_branch_type("${env.BRANCH_NAME}")=="hotfix" } }
-          steps{
-            sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
-          }
-        }
         stage("push image PROD"){
           steps{
             sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
