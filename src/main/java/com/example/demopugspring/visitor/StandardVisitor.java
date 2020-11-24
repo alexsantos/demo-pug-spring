@@ -2,6 +2,7 @@ package com.example.demopugspring.visitor;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -66,8 +67,7 @@ public class StandardVisitor implements MessageVisitor {
 
 		if (elementRep >= 0) {
 			structures[elementRep].accept(this, Location.UNKNOWN);
-		}
-		else {
+		} else {
 			for (Structure structure : structures) {
 				structure.accept(this, Location.UNKNOWN);
 			}
@@ -152,7 +152,7 @@ public class StandardVisitor implements MessageVisitor {
 
 	@Override
 	public boolean start(Composite type, Location location) throws HL7Exception {
-		Type[] types = type.getComponents(); 
+		Type[] types = type.getComponents();
 		HAPIPath hapiPath;
 		if (visitingTopComposite) {
 			hapiPath = subComponent;
@@ -160,8 +160,7 @@ public class StandardVisitor implements MessageVisitor {
 				throw new HL7Exception(HAPIPath.WRONG_PATH);
 			}
 			visitComposites(types, hapiPath, location);
-		}
-		else {
+		} else {
 			visitingTopComposite = true;
 			hapiPath = this.component;
 			if (hapiPath == null) {
@@ -185,7 +184,7 @@ public class StandardVisitor implements MessageVisitor {
 		return false;
 	}
 
-	public ArrayList<Type> getVisitedTypes() {
+	public List<Type> getVisitedTypes() {
 		return visitedTypes;
 	}
 

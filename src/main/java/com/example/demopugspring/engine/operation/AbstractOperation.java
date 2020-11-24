@@ -7,16 +7,36 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.example.demopugspring.controller.IntegrationRestController;
 import com.example.demopugspring.engine.MapperEngine;
 import com.example.demopugspring.engine.MapperError;
 
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.util.Terser;
 
+/**
+ * This abstract class serves as the base for any Operation to be applied to an
+ * HL7 message. By default, {@link #map()} calls {@link #mapKey(String)} for
+ * each in {@link #keys}. So, in order to implement this class, one would only
+ * need to implement method {@link #mapKey(String)}. If, for some reason, a
+ * different behavior is needed and keys are not meant to be iterated, one can
+ * override {@link #map()} directly and change the message there.
+ * </p>
+ * An example of implementing this class can be seen at {@link Text}.
+ * </p>
+ * There are Operations (such as {@link Field}) that may need to grab values
+ * either from the original message (MSG) or the current one (TMP). For this
+ * reason, {@link #value} may be prefixed by {@code "/[MSG]"} or
+ * {@code "/[TMP]"}.
+ * 
+ * @author Luis Torres Costa (luis.torres.costa@jmellosaude.pt)
+ *
+ */
 public abstract class AbstractOperation {
 
-	protected static final Logger log = LoggerFactory.getLogger(IntegrationRestController.class);
+	private static final String USE_MSG_VALUE_PREFIX = "/[MSG]";
+	private static final String USE_TMP_VALUE_PREFIX = "/[TMP]";
+
+	protected static final Logger log = LoggerFactory.getLogger(AbstractOperation.class);
 
 	protected MapperEngine engine;
 
@@ -29,7 +49,13 @@ public abstract class AbstractOperation {
 	protected List<String> keys;
 	protected String value;
 
-	protected ArrayList<MapperError> errors = new ArrayList<MapperError>();
+	private boolean useOriginalValue = true;
+
+	protected ArrayList<MapperError> errors = new ArrayList<>();
+
+	public boolean getUseOriginalValue() {
+		return useOriginalValue;
+	}
 
 	public List<MapperError> getErrors() {
 		return errors;
@@ -46,7 +72,16 @@ public abstract class AbstractOperation {
 		this.outgoingTerser = outgoingTerser;
 
 		this.keys = keys;
-		this.value = value;
+
+		if (value.startsWith(USE_MSG_VALUE_PREFIX)) {
+			this.value = value.substring(USE_MSG_VALUE_PREFIX.length());
+			this.useOriginalValue = true;
+		} else if (value.startsWith(USE_TMP_VALUE_PREFIX)) {
+			this.value = value.substring(USE_TMP_VALUE_PREFIX.length());
+			this.useOriginalValue = false;
+		} else {
+			this.value = value;
+		}
 	}
 
 	public void map() {
@@ -55,7 +90,7 @@ public abstract class AbstractOperation {
 		}
 	}
 
-	public abstract void mapKey(String key);
+	protected abstract void mapKey(String key);
 
 	@Override
 	public int hashCode() {
@@ -73,4 +108,5 @@ public abstract class AbstractOperation {
 		AbstractOperation other = (AbstractOperation) obj;
 		return Objects.equals(incomingMessage, other.incomingMessage) && Objects.equals(incomingTerser, other.incomingTerser) && Objects.equals(keys, other.keys) && Objects.equals(outgoingMessage, other.outgoingMessage) && Objects.equals(outgoingTerser, other.outgoingTerser) && Objects.equals(value, other.value);
 	}
+
 }

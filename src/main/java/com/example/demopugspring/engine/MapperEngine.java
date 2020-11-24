@@ -299,13 +299,13 @@ public class MapperEngine {
             Terser tmp = new Terser(outMessage);
             for (Mapper mapper : integration.getMappers()) {
                 Category mapperCategory = mapper.getCategory();
-                List<Category> supportedOperations = Arrays.asList(Category.TEXT);
+                List<Category> supportedOperations = Arrays.asList(Category.TEXT, Category.FIELD);
                 if (supportedOperations.contains(mapperCategory)) {
                     String mapperClassName = this.getClass().getPackageName() + "." + OPERATIONS_PACKAGE + "." + mapperCategory.getValue();
 
                     AbstractOperation mapperInstance = null;
                     try {
-                        log.debug("Searching for class " + mapperClassName + "...");
+                        log.debug("Searching for class {}...", mapperClassName);
                         @SuppressWarnings("unchecked")
                         Class<? extends AbstractOperation> mapperClass = (Class<? extends AbstractOperation>) Class.forName(mapperClassName);
 
@@ -313,26 +313,24 @@ public class MapperEngine {
                                 Terser.class, Terser.class, List.class, String.class);
 
                         mapperInstance = mapperConstructor.newInstance(this, message, outMessage, msg, tmp, mapper.getKey(), mapper.getValue());
-                    } catch (ClassNotFoundException e) {
-                        log.error("Couldn't find class for Mapper category " + mapperCategory + ": " + mapperClassName + "!", e);
-                        errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-                        continue;
-                    } catch (NoSuchMethodException | SecurityException e) {
-                        log.error("Couldn't find right constructor for " + mapperClassName + "!", e);
-                        errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-                        continue;
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                        log.error("Couldn't instantiate " + mapperClassName + "!", e);
-                        errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
-                        continue;
-                    }
 
-                    try {
                         mapperInstance.map();
                         errorList.addAll(mapperInstance.getErrors());
+
+                        mapperInstance.map();
+                        errorList.addAll(mapperInstance.getErrors());
+                    } catch (ClassNotFoundException e) {
+                        log.error("Couldn't find class for Mapper category '{}' ('{}')!", mapperCategory, mapperClassName, e);
+                        errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
+                    } catch (NoSuchMethodException | SecurityException e) {
+                        log.error("Couldn't find right constructor for '{}'!", mapperClassName, e);
+                        errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
+                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                        log.error("Couldn't instantiate '{}'!", mapperClassName, e);
+                        errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
                     } catch (Exception e) {
-                        log.error("Unexpected exception running mapper '" + mapperClassName + "'!", e);
-                        errorList.add(new MapperError("Global", "Unexpected exception running mapper '" + mapperClassName + "'!"));
+                        log.error("Unexpected exception setting or running Mapper '{}'!", mapperClassName, e);
+                        errorList.add(new MapperError("Global", "Unexpected setting or running Mapper '" + mapperClassName + "'!"));
                     }
                 } else {
                     switch (mapperCategory) {
