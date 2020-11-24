@@ -35,22 +35,17 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/MSH-4";
-		String key2 = "/MSH-6";
-		List<String> keys = Arrays.asList(new String[] { key1, key2 });
+		List<String> keys = Arrays.asList("/MSH-4");
 
 		String value = "NEW_VALUE";
 
 		AbstractOperation operation = new Text(meng, incomingMessage, outgoingMessage, incomingTerser, outgoingTerser, keys, value);
 
-		assertEquals("CCTV", outgoingTerser.get(key1));
-		assertEquals("CCTV", outgoingTerser.get(key2));
-
+		assertEquals("CCTV", outgoingTerser.get("/MSH-4"));
 		operation.map();
 
 		assertTrue(operation.errors.isEmpty());
-		assertEquals("NEW_VALUE", outgoingTerser.get(key1));
-		assertEquals("NEW_VALUE", outgoingTerser.get(key2));
+		assertEquals("NEW_VALUE", outgoingTerser.get("/MSH-4"));
 	}
 
 	@Test
@@ -70,8 +65,7 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/PATIENT/PID-4(#)";
-		List<String> keys = Arrays.asList(new String[] { key1 });
+		List<String> keys = Arrays.asList("/PATIENT/PID-4(#)");
 
 		String value = "1234";
 
@@ -107,22 +101,18 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/PATIENT/PID-4-1";
-		String key2 = "/ORDER/ORDER_DETAIL/OBR-4-2";
-		List<String> keys = Arrays.asList(new String[] { key1, key2 });
+		List<String> keys = Arrays.asList("/PATIENT/PID-4-1");
 
 		String value = "NEW_VALUE";
 
 		AbstractOperation operation = new Text(meng, incomingMessage, outgoingMessage, incomingTerser, outgoingTerser, keys, value);
 
-		assertEquals("244288437", outgoingTerser.get(key1));
-		assertEquals("ECO PELVICA", outgoingTerser.get(key2));
+		assertEquals("244288437", outgoingTerser.get("/PATIENT/PID-4-1"));
 
 		operation.map();
 
 		assertTrue(operation.errors.isEmpty());
-		assertEquals("NEW_VALUE", outgoingTerser.get(key1));
-		assertEquals("NEW_VALUE", outgoingTerser.get(key2));
+		assertEquals("NEW_VALUE", outgoingTerser.get("/PATIENT/PID-4-1"));
 	}
 
 	@Test
@@ -142,8 +132,7 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/PATIENT/PID-4(#)-4";
-		List<String> keys = Arrays.asList(new String[] { key1 });
+		List<String> keys = Arrays.asList("/PATIENT/PID-4(#)-4");
 
 		String value = "NEW_VALUE";
 
@@ -179,9 +168,7 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/PATIENT/PID-4-#";
-		String key2 = "/ORDER/ORDER_DETAIL/OBR-4-#";
-		List<String> keys = Arrays.asList(new String[] { key1, key2 });
+		List<String> keys = Arrays.asList("/PATIENT/PID-4-#");
 
 		String value = "1234";
 
@@ -190,14 +177,10 @@ class TextTest {
 		Type pid4Field = outgoingTerser.getSegment("/PATIENT/PID").getField(4, 0);
 		assertEquals("244288437^^^NIF^PT", pid4Field.encode());
 
-		Type obr32Field = outgoingTerser.getSegment("/ORDER/ORDER_DETAIL/OBR").getField(4, 0);
-		assertEquals("62009903^ECO PELVICA", obr32Field.encode());
-
 		operation.map();
 
 		assertTrue(operation.errors.isEmpty());
 		assertEquals("1234^1234^1234^1234^1234^1234^1234^1234", pid4Field.encode());
-		assertEquals("1234^1234^1234^1234^1234^1234", obr32Field.encode());
 	}
 
 	@Test
@@ -217,9 +200,7 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/ORDER/ORDER_DETAIL/OBR-32-1-1";
-		String key2 = "/ORDER/ORDER_DETAIL/OBR-32-1-3";
-		List<String> keys = Arrays.asList(new String[] { key1, key2 });
+		List<String> keys = Arrays.asList("/ORDER/ORDER_DETAIL/OBR-32-1-1");
 
 		String value = "NEW_VALUE";
 
@@ -232,7 +213,7 @@ class TextTest {
 		operation.map();
 
 		assertTrue(operation.errors.isEmpty());
-		assertEquals("NEW_VALUE&REBELO&NEW_VALUE", obr32Field.encode());
+		assertEquals("NEW_VALUE&REBELO&JOSE", obr32Field.encode());
 	}
 
 	@Test
@@ -252,8 +233,7 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/PATIENT/PID-4(#)-4-2";
-		List<String> keys = Arrays.asList(new String[] { key1 });
+		List<String> keys = Arrays.asList("/PATIENT/PID-4(#)-4-2");
 
 		String value = "1234";
 
@@ -290,8 +270,7 @@ class TextTest {
 		Terser incomingTerser = new Terser(incomingMessage);
 		Terser outgoingTerser = new Terser(outgoingMessage);
 
-		String key1 = "/ORDER/ORDER_DETAIL/OBR-32-1-#";
-		List<String> keys = Arrays.asList(new String[] { key1 });
+		List<String> keys = Arrays.asList("/ORDER/ORDER_DETAIL/OBR-32-1-#");
 
 		String value = "NEW_VALUE";
 

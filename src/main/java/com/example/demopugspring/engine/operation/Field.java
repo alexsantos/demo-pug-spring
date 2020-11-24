@@ -18,7 +18,7 @@ import ca.uhn.hl7v2.util.Terser;
  * by {@link AbstractOperation#value}, replacing any previous content in the
  * message.
  * </p>
- * If a key contains the '#' character, instead of using
+ * If the key contains the '#' character, instead of using
  * {@link ca.uhn.hl7v2.util.Terser}, it will use
  * {@link com.example.demopugspring.visitor.StandardVisitor} to get the types to
  * be changed.
@@ -41,13 +41,8 @@ public class Field extends AbstractOperation {
 			errors.add(new MapperError(keys.toString(), e.getMessage()));
 		}
 
-		for (String key : keys) {
-			mapKey(key);
-		}
-	}
+		String key = keys.get(0);
 
-	@Override
-	protected void mapKey(String key) {
 		try {
 			if (key.contains("#")) {
 				StandardVisitor visitor = new StandardVisitor(key);
@@ -86,5 +81,4 @@ public class Field extends AbstractOperation {
 		Field other = (Field) obj;
 		return Objects.equals(fieldValue, other.fieldValue);
 	}
-
 }

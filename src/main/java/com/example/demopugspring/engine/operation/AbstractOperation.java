@@ -82,13 +82,7 @@ public abstract class AbstractOperation {
 		return errors;
 	}
 
-	public void map() {
-		for (String key : keys) {
-			mapKey(key);
-		}
-	}
-
-	protected abstract void mapKey(String key);
+	public abstract void map();
 
 	@Override
 	public int hashCode() {
