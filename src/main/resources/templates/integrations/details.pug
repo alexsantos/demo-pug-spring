@@ -34,7 +34,7 @@ html(lang="en")
                         h3 Mapper List
                         form(name="integration" action="/integrations/update" method="POST")
                             input(type="hidden" name="id" value=integration.id)
-                            table.pure-table.pure-table-horizontal
+                            table.pure-table.pure-table-horizontal(id="includeTable")
                                 thead
                                     tr
                                         th #
@@ -42,17 +42,25 @@ html(lang="en")
                                         th Value
                                         th Category
                                         th ON
+                                        th Ordering
                                 tbody
+                                    - var i=0
                                     each item in mappers
                                         if (integration.hasMapper(item.id))
                                             tr
-                                                td
-                                                    a.up(href="#") Up
+                                                td=item.id
                                                 td=PugHelper.join(",", item.key)
                                                 td=item.value
                                                 td=item.category
                                                 td
                                                    input(type="checkbox" id="included" name="mappers" "checked" value=item.id)
+                                                td
+                                                    .pure-button-group(role="group")
+                                                        a.pure-button.button-small.up(href="#")
+                                                            i.fas.fa-arrow-up
+                                                        a.pure-button.button-small.down(href="#")
+                                                            i.fas.fa-arrow-down
+                                            - i = i + 1
                             p
                             table.pure-table.pure-table-horizontal
                                 thead
