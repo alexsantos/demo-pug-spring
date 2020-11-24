@@ -264,7 +264,7 @@ public class MapperEngine {
         PipeParser parser = context.getPipeParser();
         try {
             // Transforming the string before parsing to a HL7v2 Message
-            incomingMessage
+            incomingMessage = incomingMessage
                     .replace("PDF_BASE64", "ED")
                     .replace("|JVBER", "|^^^^JVBER");
             Message message = parser.parse(incomingMessage);
