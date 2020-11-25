@@ -1,12 +1,22 @@
 package com.example.demopugspring.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
@@ -26,22 +36,10 @@ public class Integration {
 	private Application receivingApp;
 	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	private Message resultMessage;
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-	private List<Mapper> mappers;
 
 	public Integration(Message message, Application sendingApp, Application receivingApp, List<Mapper> mappers) {
 		this.message = message;
 		this.sendingApp = sendingApp;
 		this.receivingApp = receivingApp;
-		this.mappers = mappers;
-	}
-
-	public boolean hasMapper(Long id) {
-		for (Mapper mapper : this.mappers) {
-			if (mapper.getId().equals(id)) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

@@ -2,6 +2,7 @@ package com.example.demopugspring.service;
 
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.repository.MapperRepository;
+import org.checkerframework.checker.nullness.Opt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,17 @@ public class MapperService {
 	public List<Mapper> findAll() {
 		List<Mapper> maps = new ArrayList<>();
 		mapperRepository.findAll().forEach(maps::add);
+
+		return maps;
+	}
+
+	public List<Mapper> findALlByIdNotIn(List<Long> mapperIDs){
+		List<Mapper> maps = new ArrayList<>();
+		if(mapperIDs.isEmpty()){
+			mapperRepository.findAll().forEach(maps::add);
+		}else{
+			mapperRepository.findAllByIdNotIn(mapperIDs).forEach(maps::add);
+		}
 		return maps;
 	}
 

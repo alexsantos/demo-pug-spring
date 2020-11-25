@@ -1,28 +1,32 @@
 package com.example.demopugspring.controller;
 
-import com.example.demopugspring.helper.PugHelper;
-import com.example.demopugspring.model.Application;
-import com.example.demopugspring.model.Integration;
-import com.example.demopugspring.model.Mapper;
-import com.example.demopugspring.service.ApplicationService;
-import com.example.demopugspring.service.IntegrationService;
-import com.example.demopugspring.service.MapperService;
-import com.example.demopugspring.service.MessageService;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.demopugspring.model.IntegrationMapper;
+import com.example.demopugspring.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.demopugspring.helper.PugHelper;
+import com.example.demopugspring.model.Integration;
+import com.example.demopugspring.model.Mapper;
 
 @Controller
 public class IntegrationController {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Autowired
+	IntegrationMapperService integrationMapperService;
 	@Autowired
 	IntegrationService integrationService;
 	@Autowired
@@ -43,9 +47,20 @@ public class IntegrationController {
 	@GetMapping(value = "/integrations/{id}")
 	public String getIntegration(Model model, @PathVariable(name = "id") Long id) {
 		Integration integration = integrationService.findById(id);
-		List<Mapper> mappers = mapperService.findAll();
+		List<IntegrationMapper> integrationMappers = integrationMapperService.retrieveIntegrationMappersFromIntegration(integration);
+		ArrayList<Long> mappersIndex = new ArrayList<>();
+		List<Mapper> mappers = new ArrayList<>();
+		Mapper mapper;
+		for(IntegrationMapper intMapper : integrationMappers){
+			mappersIndex.add(intMapper.getMapper().getId());
+			mapper = intMapper.getMapper();
+			mapper.setActive(intMapper.isActive());
+			mappers.add(mapper);
+		}
+		List<Mapper> mappersNotIncluded = mapperService.findALlByIdNotIn(mappersIndex);
 		model.addAttribute("integration", integration);
-		model.addAttribute("mappers", mappers);
+		model.addAttribute("mappersIncluded", mappers);
+		model.addAttribute("mappersNotIncluded", mappersNotIncluded);
 		model.addAttribute("PugHelper", new PugHelper());
 		return "integrations/details";
 	}
@@ -59,10 +74,15 @@ public class IntegrationController {
 
 	@GetMapping(value = {"/integrations/edit"})
 	public String showEditIntegration(Model model, @RequestParam("id") Long id) {
+		Mapper mapper;
 		Integration integration = integrationService.findById(id);
-		List<Long> mappers = new ArrayList<>();
-		for (Mapper mapper : integration.getMappers()) {
-			mappers.add(mapper.getId());
+		List<IntegrationMapper> integrationMappers = integrationMapperService.retrieveIntegrationMappersFromIntegration(integration);
+		List<Mapper> mappers = new ArrayList<>();
+
+		for (IntegrationMapper integrationMapper : integrationMappers) {
+			mapper = integrationMapper.getMapper();
+			mapper.setActive(integrationMapper.isActive());
+			mappers.add(mapper);
 		}
 		model.addAttribute("messages", messageService.findAll());
 		model.addAttribute("applications", applicationService.findAll());
@@ -91,11 +111,12 @@ public class IntegrationController {
 	@PostMapping(value = "/integrations/update")
 	public String updateIntegration(Model model,
 									@ModelAttribute("id") Long id,
-									@RequestParam(value = "mappers", required = false, defaultValue = "") List<Long> mappers) {
+	        @RequestParam(value = "mappers", required = false, defaultValue = "") List<Long> mappers,
+	        @RequestParam(value = "activeMappers", required = false, defaultValue = "") List<Long> activeMappers) {
 		try {
 			logger.info("Integration ID:" + id);
 			logger.info(mappers.toString());
-			integrationService.updateMappers(id, mappers);
+			integrationService.updateMappers(id, mappers, activeMappers);
 			model.addAttribute("success", "1");
 			return "redirect:/integrations/".concat(String.valueOf(id));
 		} catch (Exception ex) {
