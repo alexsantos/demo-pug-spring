@@ -45,7 +45,8 @@ public class Mapper {
 			AFTER_JOIN_FIELDS("after_join_fields"),
 			CLEAR_IF("clear_if"),
 			ADD_SNS("add_sns"),
-			REPLACE("replace");
+			REPLACE("replace"),
+			TEXT_IF("text_if");
 
 		private final String value;
 

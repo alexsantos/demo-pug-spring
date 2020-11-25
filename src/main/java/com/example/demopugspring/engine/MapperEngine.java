@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.demopugspring.model.IntegrationMapper;
 import com.example.demopugspring.service.IntegrationMapperService;
@@ -260,6 +261,18 @@ public class MapperEngine {
         }
     }
 
+	public void textIf(Terser msg, Terser tmp, List<String> fields, String value, List<MapperError> errorList) throws HL7Exception {
+		String key = fields.get(0);
+		String ifKey = fields.get(1);
+		String ifRegex = fields.size() > 2 ? fields.get(2) : "";
+
+		String ifValue = Optional.ofNullable(tmp.get(ifKey)).orElse("");
+
+		if (ifValue.matches(ifRegex)) {
+			tmp.set(key, value);
+		}
+	}
+
     public Response run(String incomingMessage) {
         String result = "";
         Response response = new Response();
@@ -327,9 +340,6 @@ public class MapperEngine {
 
                         mapperInstance.map();
                         errorList.addAll(mapperInstance.getErrors());
-
-                        mapperInstance.map();
-                        errorList.addAll(mapperInstance.getErrors());
                     } catch (ClassNotFoundException e) {
                         log.error("Couldn't find class for Mapper category '{}' ('{}')!", mapperCategory, mapperClassName, e);
                         errorList.add(new MapperError("Global", "Mapper category " + mapperCategory + " isn't supported!"));
@@ -379,6 +389,9 @@ public class MapperEngine {
                         case REPLACE:
                             replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
                             break;
+					case TEXT_IF:
+						textIf(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
+						break;
                         default:
                             errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapperCategory));
                     }
