@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -259,9 +260,10 @@ public class MapperEngine {
 	public void textIf(Terser msg, Terser tmp, List<String> fields, String value, List<MapperError> errorList) throws HL7Exception {
 		String key = fields.get(0);
 		String ifKey = fields.get(1);
-		String ifRegex = fields.get(2);
+		String ifRegex = fields.size() > 2 ? fields.get(2) : "";
 
-		String ifValue = tmp.get(ifKey);
+		String ifValue = Optional.ofNullable(tmp.get(ifKey)).orElse("");
+
 		if (ifValue.matches(ifRegex)) {
 			tmp.set(key, value);
 		}
@@ -324,9 +326,6 @@ public class MapperEngine {
                                 Terser.class, Terser.class, List.class, String.class);
 
                         mapperInstance = mapperConstructor.newInstance(this, message, outMessage, msg, tmp, mapper.getKey(), mapper.getValue());
-
-                        mapperInstance.map();
-                        errorList.addAll(mapperInstance.getErrors());
 
                         mapperInstance.map();
                         errorList.addAll(mapperInstance.getErrors());
