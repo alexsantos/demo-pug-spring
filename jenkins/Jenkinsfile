@@ -151,6 +151,15 @@ pipeline {
         }
       }
     }
+    stage("deploy cloud run"){
+      steps{
+        configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
+          withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+            sh "gcloud run deploy demo-pug-spring --image ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+          }
+        }
+      }
+    }
     stage('Clean and create'){
       parallel {
         stage("docker clean"){
