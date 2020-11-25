@@ -155,7 +155,7 @@ pipeline {
       steps{
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
           withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-            sh "gcloud run deploy demo-pug-spring --image ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
+            sh "gcloud run deploy demo-pug-spring --image ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} --plataform managed --region europe-west-4"
           }
         }
       }
