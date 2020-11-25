@@ -2,13 +2,15 @@ package com.example.demopugspring.repository;
 
 import com.example.demopugspring.model.Message;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface MessageRepository extends CrudRepository<Message, Long> {
-	public Message findByCodeAndEvent(String code, String event);
+	Message findByCodeAndEvent(String code, String event);
 
-	public Message findByCodeAndEventAndVersion(String code, String event, Message.Version version);
+	Message findByCodeAndEventAndVersion(String code, String event, Message.Version version);
 
-	public List<Message> findByOrderByCodeAscEventAscVersionAsc();
+	List<Message> findByOrderByCodeAscEventAscVersionAsc();
 }

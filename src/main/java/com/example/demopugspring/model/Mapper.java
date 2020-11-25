@@ -22,6 +22,8 @@ public class Mapper {
 	private List<String> key;
 	private String value;
 	private Mapper.Category category;
+	@Transient
+	private boolean active;
 
 	public Mapper(List<String> key, String value, Mapper.Category category) {
 		this.key = key;

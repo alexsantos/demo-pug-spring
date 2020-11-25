@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demopugspring.model.IntegrationMapper;
+import com.example.demopugspring.service.IntegrationMapperService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,8 @@ public class MapperEngine {
     MarriageStatusCodes marriageStatusCodes;
     @Autowired
     IntegrationService integrationService;
+    @Autowired
+    IntegrationMapperService integrationMapperService;
     @Autowired
     ApplicationService applicationService;
     @Autowired
@@ -295,11 +299,18 @@ public class MapperEngine {
                     messageService.find(messageCode, messageEvent, messageVersion),
                     applicationService.findByCode(sendingApp),
                     applicationService.findByCode(receivingApp));
+
             if (integration == null) {
                 throw new HL7Exception("No integration found for message " + messageCode + "-" + messageEvent +
                         " and sending application " + sendingApp + " and receiving application " + receivingApp);
             }
-            log.info("Integration:" + integration.getMappers().toString());
+            List<IntegrationMapper> integrationMappers = integrationMapperService.retrieveActiveIntegrationMappersFromIntegration(integration);
+            List<Mapper> mappers = new ArrayList<>();
+
+            for(IntegrationMapper intMapper : integrationMappers){
+                mappers.add(intMapper.getMapper());
+            }
+            log.info("Integration:" + mappers.toString());
             // Change message version
             volatileTerser.set("MSH-9-1", integration.getResultMessage().getCode());
             volatileTerser.set("MSH-9-2", integration.getResultMessage().getEvent());
@@ -310,7 +321,7 @@ public class MapperEngine {
                 log.info(name);
             }
             Terser tmp = new Terser(outMessage);
-            for (Mapper mapper : integration.getMappers()) {
+            for (Mapper mapper : mappers) {
                 Category mapperCategory = mapper.getCategory();
                 List<Category> supportedOperations = Arrays.asList(Category.TEXT, Category.FIELD);
                 if (supportedOperations.contains(mapperCategory)) {
