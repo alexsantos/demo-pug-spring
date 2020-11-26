@@ -1,5 +1,7 @@
 package com.example.demopugspring.filter;
 
+import java.util.StringTokenizer;
+
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Primitive;
 import ca.uhn.hl7v2.util.Terser;
@@ -19,20 +21,27 @@ public class MatchesValueFilter implements Filter {
 	}
 
     private String parseValue(String value, Terser tmp) throws HL7Exception {
-        String fieldValue;
-        String pathToBeReplace;
+		String token;
+		String fieldValue;
 
-        int firstIndex = value.indexOf(PARSE_TOKEN);
-        int lastIndex = value.lastIndexOf(PARSE_TOKEN);
+		StringTokenizer tok = new StringTokenizer(value, PARSE_TOKEN + PARSE_TOKEN, false);
+		while (tok.hasMoreTokens()) {
+			token = tok.nextToken();
 
-        if (firstIndex < lastIndex) {
-            pathToBeReplace = value.substring(firstIndex + 1, lastIndex);
-            fieldValue = tmp.get(pathToBeReplace);
-            if (fieldValue == null) {
-                fieldValue = "";
-            }
-            value = value.replaceAll(PARSE_TOKEN + pathToBeReplace + PARSE_TOKEN, fieldValue);
-        }
+			if (token.length() <= 1) {
+				continue;
+			}
+
+			try {
+				fieldValue = tmp.get(token);
+				if (fieldValue == null) {
+					fieldValue = "";
+				}
+				value = value.replaceAll(PARSE_TOKEN + token + PARSE_TOKEN, fieldValue);
+			} catch (HL7Exception e) {
+				// DO NOTHING TOKEN IT'S NOT A HL/ PATH
+			}
+		}
         return value;
     }
 
