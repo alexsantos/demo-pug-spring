@@ -43,24 +43,24 @@ def getRegistryName(String branch_name) {
 }
 def getVersion(String version, String branch_name) {
   if (branch_name =~ ".*feature/.*") {
-      	return version.replace("SNAPSHOT",branch_name.replace("feature/",""));
+      return version.replace("SNAPSHOT",branch_name.replace("feature/",""));
   }else if(branch_name =~ ".*hotfix/.*"){
-    	return version+"-hotfix";
+    return version+"-hotfix";
   }else{
         return version;
   }
 }
 
 def isReturnScript(String command){
-		return sh(script: command, returnStatus: true);
+return sh(script: command, returnStatus: true);
 }
 
 def getFeatureName(String branch_name) {
-	return branch_name.replace("feature/","");
+return branch_name.replace("feature/","");
 }
 
 def getBranchAsCode(String branch_name) {
-	return branch_name.replace("/","%2F");
+return branch_name.replace("/","%2F");
 }
 pipeline {
   agent { label 'master' }
@@ -79,7 +79,7 @@ pipeline {
     maven 'Maven-Default'
   }
   stages{
-    
+   
     stage('Configurations') {
       parallel {
           stage("read Version"){
@@ -146,6 +146,8 @@ pipeline {
       parallel {
         stage("push image PROD"){
           steps{
+            sh "gcloud config set account ci-serviceaccount@helios-qua.iam.gserviceaccount.com"
+            sh "gcloud auth list"
             sh "docker push ${REGISTRY}/${env.PROJECT_NAME}:${VERSION}"
           }
         }
@@ -155,7 +157,7 @@ pipeline {
       steps{
         configFileProvider([configFile(fileId: '0246210f-143b-42f5-96e3-55da40fe8903', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
           withCredentials([file(credentialsId: 'helios_qua', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-            sh "gcloud run deploy demo-pug-spring --image ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} --plataform managed --region europe-west-4"
+            sh "gcloud run deploy demo-pug-spring --image ${REGISTRY}/${env.PROJECT_NAME}:${VERSION} --platform managed --region europe-west4"
           }
         }
       }
