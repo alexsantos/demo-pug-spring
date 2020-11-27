@@ -52,6 +52,8 @@ public class MapperEngine {
 
     private static final String OPERATIONS_PACKAGE = "operation";
 
+	private static final String ESCAPED_CARRIAGE_RETURN = "\\.br\\";
+
 	private static final Pattern OBX2_ED_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)ED");
 	private static final Pattern OBX2_PDF_BASE64_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)PDF_BASE64");
 	private static final Pattern OBX5_JVBER_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|ED\\|.{0,250}\\|.{0,20}\\|)JVBER");
@@ -461,14 +463,17 @@ public class MapperEngine {
     }
 
 	/**
-	 * Returns a new string which, by applying some needed fixes to each
-	 * segment, should now be valid when parsing into an Hapi HL7v2 Message.
+	 * Returns a new string which, by applying some needed general fixes or ones
+	 * specific to each segment, should now be valid when parsing into an Hapi
+	 * HL7v2 Message.
 	 * 
 	 * @param message
 	 *            the content of an HL7v2 message.
 	 * @return a valid message, ready to be parsed.
 	 */
 	public static String fixMessage(String message) {
+		message = message.replace("\n", ESCAPED_CARRIAGE_RETURN);
+
 		StringTokenizer messageTokenizer = new StringTokenizer(message, "\r");
 		String segment = "";
 		StringBuilder newMessageBuilder = new StringBuilder();
@@ -477,7 +482,7 @@ public class MapperEngine {
 			segment = messageTokenizer.nextToken();
 			if (Character.isWhitespace(segment.charAt(0)))
 				segment = segment.stripLeading();
-			if (segment.startsWith("OBX")) {
+			if (segment.startsWith("OBX") || segment.startsWith("\\.br\\OBX")) {
 				newMessageBuilder.append(fixOBX(segment)).append("\r");
 			} else {
 				newMessageBuilder.append(segment + "\r").append("\r");
