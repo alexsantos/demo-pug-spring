@@ -345,4 +345,20 @@ class MapperEngineTest {
 
 		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
 	}
+
+	@Test
+	void testAfterFieldEmpty() throws HL7Exception {
+		String toBeReturned = "CUFC";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS||20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
+		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = { "/MSH-6" };
+		meng.fieldAfterOperation(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.AFTER_FIELD, errors);
+		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
+	}
 }
