@@ -1,6 +1,8 @@
 package com.example.demopugspring.engine;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.List;
@@ -328,5 +330,19 @@ class MapperEngineTest {
 
 	}
 
+	@Test
+	void testFixMessage() {
+		String messageString = "MSH|^~\\&|CWM|CCTV|GH|CCB|20201103160113||ORU^R01|7ba75e23-f933-4c7f-b5ed-2be0efccc588|P|2.4|||AL\r\n"
+				+ "PID||43417401|43417401^^^JMS^NS|12586669^^^N_BI|CUNHA^LETÍCIA SOFIA^||19830224|F|||RUA VALE DE ROSAS Nº 7^^PONTE DO ROL^^2560-150^||^^^^^^915369804|^^^^^^|||||383543824|||||||||||N\r\n"
+				+ "PV1||Consultas|||||||||1||||||||5486248|||S\r\n"
+				+ "ORC|SC|2060770|CCTV2020118074||CM||1.000\r\n"
+				+ "OBR||2060770|CCTV2020118074|62009903^ECO PELVICA|||20201103144258|20201103160113||||||||||CCTV2020118074|||US|20201103040103||US|||1^^^20201103040103|||||16265|16265|16265&&José Rebelo||||||||||||CCTV2020118074^^ACCESSION_NUMBER\r\n"
+				+ "OBX|1|PDF_BASE64|904476||JVBERi0xLjQKJeLjz9MKCONCATENATED_BASE_64_STRINGZgo2MTg0OQolJUVPRgo=||||||F\r\n";
+		
+		assertThrows(HL7Exception.class, () -> ContextSingleton.getInstance().getPipeParser().parse(messageString));
+		
+		String fixedString = MapperEngine.fixMessage(messageString);
 
+		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
+	}
 }

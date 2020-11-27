@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
-import com.example.demopugspring.model.IntegrationMapper;
-import com.example.demopugspring.service.IntegrationMapperService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,7 @@ import com.example.demopugspring.engine.operation.AbstractOperation;
 import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.filter.MatchesValueFilter;
 import com.example.demopugspring.model.Integration;
+import com.example.demopugspring.model.IntegrationMapper;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.model.Mapper.Category;
 import com.example.demopugspring.operation.ClearFilteredOperation;
@@ -32,6 +33,7 @@ import com.example.demopugspring.properties.IdentificationCodes;
 import com.example.demopugspring.properties.MarriageStatusCodes;
 import com.example.demopugspring.properties.PropertiesCategoriesEnum;
 import com.example.demopugspring.service.ApplicationService;
+import com.example.demopugspring.service.IntegrationMapperService;
 import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MessageService;
 import com.example.demopugspring.visitor.MapperVisitor;
@@ -49,6 +51,10 @@ import ca.uhn.hl7v2.util.Terser;
 public class MapperEngine {
 
     private static final String OPERATIONS_PACKAGE = "operation";
+
+	private static final Pattern OBX2_ED_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)ED");
+	private static final Pattern OBX2_PDF_BASE64_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)PDF_BASE64");
+	private static final Pattern OBX5_JVBER_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|ED\\|.{0,250}\\|.{0,20}\\|)JVBER");
 
     private static final Logger log = LoggerFactory.getLogger(MapperEngine.class);
 
@@ -281,9 +287,7 @@ public class MapperEngine {
         PipeParser parser = context.getPipeParser();
         try {
             // Transforming the string before parsing to a HL7v2 Message
-            incomingMessage = incomingMessage
-                    .replace("PDF_BASE64", "ED")
-                    .replace("|JVBER", "|^^^^JVBER");
+			incomingMessage = fixMessage(incomingMessage);
             Message message = parser.parse(incomingMessage);
             Message volatileMessage = parser.parse(incomingMessage);
             log.info("Incoming message version:" + message.getVersion());
@@ -456,5 +460,44 @@ public class MapperEngine {
 		return messageContent;
     }
 
+	/**
+	 * Returns a new string which, by applying some needed fixes to each
+	 * segment, should now be valid when parsing into an Hapi HL7v2 Message.
+	 * 
+	 * @param message
+	 *            the content of an HL7v2 message.
+	 * @return a valid message, ready to be parsed.
+	 */
+	public static String fixMessage(String message) {
+		StringTokenizer messageTokenizer = new StringTokenizer(message, "\r");
+		String segment = "";
+		StringBuilder newMessageBuilder = new StringBuilder();
 
+		while (messageTokenizer.hasMoreTokens()) {
+			segment = messageTokenizer.nextToken();
+			if (Character.isWhitespace(segment.charAt(0)))
+				segment = segment.stripLeading();
+			if (segment.startsWith("OBX")) {
+				newMessageBuilder.append(fixOBX(segment)).append("\r");
+			} else {
+				newMessageBuilder.append(segment + "\r").append("\r");
+			}
+		}
+
+		return newMessageBuilder.toString();
+	}
+
+	/**
+	 * Returns a new string which, by fixing the OBX-2 and OBX-5 fields, should
+	 * now be valid when parsing.
+	 * 
+	 * @param segment
+	 *            the OBX segment to be fixed.
+	 * @return a valid OBX segment, ready to be parsed.
+	 */
+	public static String fixOBX(String segment) {
+		String newSegment = OBX2_ED_PATTERN.matcher(segment).replaceFirst("TX");
+		newSegment = OBX2_PDF_BASE64_PATTERN.matcher(newSegment).replaceFirst("ED");
+		return OBX5_JVBER_PATTERN.matcher(newSegment).replaceFirst("^^^^JVBER");
+	}
 }
