@@ -263,7 +263,7 @@ public class StandardVisitor implements MessageVisitor {
 
 	private void getField(Segment segment, int fieldNumber, int fieldRepetition, Location location) throws HL7Exception {
 		Type[] typeFields;
-
+		Type segmentField;
 		typeFields = segment.getField(fieldNumber);
 		if (typeFields.length > 0) {
 			if (fieldRepetition >= 0) {
@@ -275,6 +275,10 @@ public class StandardVisitor implements MessageVisitor {
 					visitingTopComposite = false;
 				}
 			}
+		}
+		else {
+			segmentField = segment.getField(fieldNumber, 0);
+			segmentField.accept(this, location);
 		}
 	}
 
