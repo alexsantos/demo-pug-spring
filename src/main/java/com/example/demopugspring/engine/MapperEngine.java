@@ -482,11 +482,12 @@ public class MapperEngine {
 			segment = messageTokenizer.nextToken();
 			if (Character.isWhitespace(segment.charAt(0)))
 				segment = segment.stripLeading();
-			if (segment.startsWith("OBX") || segment.startsWith("\\.br\\OBX")) {
-				newMessageBuilder.append(fixOBX(segment)).append("\r");
+			if (segment.startsWith("OBX")) {
+				newMessageBuilder.append(fixOBX(segment));
 			} else {
-				newMessageBuilder.append(segment + "\r").append("\r");
+				newMessageBuilder.append(segment);
 			}
+			newMessageBuilder.append("\r");
 		}
 
 		return newMessageBuilder.toString();
