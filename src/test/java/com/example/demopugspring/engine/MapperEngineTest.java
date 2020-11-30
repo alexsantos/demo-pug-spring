@@ -349,15 +349,36 @@ class MapperEngineTest {
 
 	@Test
 	void testFixMessage() {
-		String messageString = "MSH|^~\\&|CWM|CCTV|GH|CCB|20201103160113||ORU^R01|7ba75e23-f933-4c7f-b5ed-2be0efccc588|P|2.4|||AL\r\n"
-				+ "PID||43417401|43417401^^^JMS^NS|12586669^^^N_BI|CUNHA^LETÍCIA SOFIA^||19830224|F|||RUA VALE DE ROSAS Nº 7^^PONTE DO ROL^^2560-150^||^^^^^^915369804|^^^^^^|||||383543824|||||||||||N\r\n"
-				+ "PV1||Consultas|||||||||1||||||||5486248|||S\r\n"
-				+ "ORC|SC|2060770|CCTV2020118074||CM||1.000\r\n"
-				+ "OBR||2060770|CCTV2020118074|62009903^ECO PELVICA|||20201103144258|20201103160113||||||||||CCTV2020118074|||US|20201103040103||US|||1^^^20201103040103|||||16265|16265|16265&&José Rebelo||||||||||||CCTV2020118074^^ACCESSION_NUMBER\r\n"
-				+ "OBX|1|PDF_BASE64|904476||JVBERi0xLjQKJeLjz9MKCONCATENATED_BASE_64_STRINGZgo2MTg0OQolJUVPRgo=||||||F\r\n";
+		String messageString = "MSH|^~\\&|CWM|CCTV|GH|CCB|20201103160113||ORU^R01|7ba75e23-f933-4c7f-b5ed-2be0efccc588|P|2.4|||AL\r"
+				+ "PID||43417401|43417401^^^JMS^NS|12586669^^^N_BI|CUNHA^LETÍCIA SOFIA^||19830224|F|||RUA VALE DE ROSAS Nº 7^^PONTE DO ROL^^2560-150^||^^^^^^915369804|^^^^^^|||||383543824|||||||||||N\r"
+				+ "PV1||Consultas|||||||||1||||||||5486248|||S\r"
+				+ "ORC|SC|2060770|CCTV2020118074||CM||1.000\r"
+				+ "OBR||2060770|CCTV2020118074|62009903^ECO PELVICA|||20201103144258|20201103160113||||||||||CCTV2020118074|||US|20201103040103||US|||1^^^20201103040103|||||16265|16265|16265&&José Rebelo||||||||||||CCTV2020118074^^ACCESSION_NUMBER\r"
+				+ "OBX|1|PDF_BASE64|904476||JVBERi0xLjQKJeLjz9MKCONCATENATED_BASE_64_STRINGZgo2MTg0OQolJUVPRgo=||||||F\r";
 		
 		assertThrows(HL7Exception.class, () -> ContextSingleton.getInstance().getPipeParser().parse(messageString));
 		
+		String fixedString = MapperEngine.fixMessage(messageString);
+
+		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
+	}
+
+	@Test
+	void testFixMessageWithNewlines() {
+		String messageString = "MSH|^~\\&|CWM|CCB|PACS_CCB|CCB|20201130140403||ORU^R01|21c1dd72-7d42-4b89-b936-a4b1c0f59a26|P|2.4|||AL\r"
+				+ "PID||JMS15392104|JMS15392104^^^JMS^NS|^^^N_BI|FONSECA^PAULO JORGE QUELHAS^||19700103|M|||RUA DO CRUZEIRO, Nº12 4  ESQ ^^LISBOA^^1300-164^||^^^^^^962441340|^^^^^^|||||386346510|||||||||||N\r"
+				+ "PV1||Consultas|||||||||1||||||||5047372|||S\r"
+				+ "ORC|SC|1392079|CCB2020027089||CM||1.000\r"
+				+ "OBR||1392079|CCB2020027089|60010001^RX TORAX, PULMOES E CORACAO 1 INCIDENCIA|||20201127090315|20201130140403||||||||||CCB2020027089|||CR|20201130020350||CR|||1^^^20201130020350|||||23000|23000|23000&&Jorge Rodrigues||||||||||||CCB2020027089^^ACCESSION_NUMBER\r"
+				+ "OBX|1|ED|945987||Radiografia do torax em PA\n"
+				+ "Ligeira acentuacao da convexidade dos contornos cardiacos com ligeira acentuacao vascular hilar bilateral sem condensacao ou cavitacao do parenquima pulmonar. Seios pleurais permeaveis com elevacao da hemicupula diafragmatica direita.\n"
+				+ "\n"
+				+ "\n"
+				+ "Dr(a): Jorge Rodrigues\n"
+				+ "OM: 23000||||||F\r";
+
+		assertThrows(HL7Exception.class, () -> ContextSingleton.getInstance().getPipeParser().parse(messageString));
+
 		String fixedString = MapperEngine.fixMessage(messageString);
 
 		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
