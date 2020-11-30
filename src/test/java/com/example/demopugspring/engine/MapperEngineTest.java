@@ -45,6 +45,23 @@ class MapperEngineTest {
 	}
 
 	@Test
+	void testReplaceEmpty() throws HL7Exception {
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
+		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO|||M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+
+		String toBeReturned = "19821209";
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		outMessage.parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = { "/PID-7" };
+		meng.replaceOperation(terserSpy, Arrays.asList(testeListaKeys), "(00)*", errors);
+		assertEquals("", terserSpy.get("/PID-7"));
+	}
+
+	@Test
 	void testAddSNSOperation() throws HL7Exception {
 		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
 				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";

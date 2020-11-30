@@ -18,7 +18,11 @@ public class ReplaceVisitor extends MapperVisitor {
 
 	@Override
 	public boolean visit(Primitive type, Location location) throws HL7Exception {
-		type.setValue(type.getValue().replaceAll(regex, valueToReplace));
+		String value = type.getValue();
+		if (value == null) {
+			value = "";
+		}
+		type.setValue(value.replaceAll(regex, valueToReplace));
 		return false;
 	}
 
