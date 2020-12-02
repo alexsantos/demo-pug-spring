@@ -50,7 +50,13 @@ import ca.uhn.hl7v2.util.Terser;
 @Service
 public class MapperEngine {
 
-    private static final String OPERATIONS_PACKAGE = "operation";
+	private static final int NUMBER_PID_SEQ = 39;
+
+	private static final String COMPONENT_SEPARATOR = "^";
+
+	private static final String FIELD_SEPARADOR = "|";
+
+	private static final String OPERATIONS_PACKAGE = "operation";
 
 	private static final String ESCAPED_CARRIAGE_RETURN = "\\.br\\";
 
@@ -246,13 +252,14 @@ public class MapperEngine {
 
     public void addContactRepetitions(Terser tmp, String field, String... strings) throws HL7Exception {
         int i = 0;
+		final Pattern EMAIL_REGEX = Pattern.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", Pattern.CASE_INSENSITIVE);
 
         for (String s : strings) {
             if (StringUtils.isEmpty(s)) {
                 continue;
             }
-            boolean isPhone = s.matches("[\\d]+");
-            if (isPhone) {
+			boolean isEmail = EMAIL_REGEX.matcher(s).matches();
+			if (!isEmail) {
                 tmp.set(field + "-13(" + i + ")-3", "PH");
                 tmp.set(field + "-13(" + i + ")-12", s);
                 tmp.set(field + "-13(" + i + ")-4", "");
@@ -456,8 +463,8 @@ public class MapperEngine {
 
     private String cleanMessage(String message) {
 		String messageContent = message.replaceAll("~(~)+", "~");
-		messageContent = messageContent.replace("|~", "|");
-		messageContent = messageContent.replace("~|", "|");
+		messageContent = messageContent.replace("|~", FIELD_SEPARADOR);
+		messageContent = messageContent.replace("~|", FIELD_SEPARADOR);
 
 		return messageContent;
     }
@@ -484,6 +491,8 @@ public class MapperEngine {
 				segment = segment.stripLeading();
 			if (segment.startsWith("OBX")) {
 				newMessageBuilder.append(fixOBX(segment));
+			} else if (segment.startsWith("PID")) {
+				newMessageBuilder.append(fixPID(segment));
 			} else {
 				newMessageBuilder.append(segment);
 			}
@@ -491,6 +500,59 @@ public class MapperEngine {
 		}
 
 		return newMessageBuilder.toString();
+	}
+
+	private static String fixPID(String segment) {
+		String field13Old = getFieldToFix(segment, 13);
+		String field13 = getFixContactPhone(field13Old);
+		
+		String field14Old = getFieldToFix(segment, 14);
+		String field14 = getFixContactPhone(field14Old);
+
+		return segment.replaceFirst(Pattern.quote(field13Old), field13).replaceFirst(Pattern.quote(field14Old), field14);
+	}
+
+	/**
+	 * Swap Field PID-13-7 to PID-13-12. PID-13-7 doesn't support non digits. So
+	 * it's necessary a swap between PID-13-7 and PID-13-12. This function could
+	 * be applied to PID-14-7.
+	 * 
+	 * @param field13Old
+	 *            The field PID-13(0)
+	 * @return
+	 */
+	private static String getFixContactPhone(String field13Old) {
+		String[] field13NewArray = new String[NUMBER_PID_SEQ];
+		int i = 0;
+		String[] field13OldTokenizer = field13Old.split("\\" + COMPONENT_SEPARATOR);
+		for (String component : field13OldTokenizer) {
+			field13NewArray[i] = component;
+			i++;
+		}
+		if (!StringUtils.isEmpty(field13NewArray[7 - 1])) {
+			field13NewArray[12 - 1] = field13NewArray[7 - 1];
+			field13NewArray[7 - 1] = StringUtils.EMPTY;
+		}
+		StringBuilder field13New = new StringBuilder();
+		for (String field : field13NewArray) {
+			field13New.append(field == null ? StringUtils.EMPTY : field);
+			field13New.append(COMPONENT_SEPARATOR);
+		}
+		return field13New.toString().replaceAll("\\^{2,}$", "");
+	}
+
+
+	/**
+	 * Get Field number i of the Segment. It uses FIELD_SEPARADOR.
+	 * 
+	 * @param segment
+	 * @param i,
+	 *            the order of field to get
+	 * @return the field number i of the segment
+	 */
+	public static String getFieldToFix(String segment, int i) {
+		String[] messageTokenizer = segment.split("\\" + FIELD_SEPARADOR);
+		return messageTokenizer[i];
 	}
 
 	/**
