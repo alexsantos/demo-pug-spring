@@ -95,11 +95,11 @@ class MapperEngineTest {
 		Terser t = new Terser(outMessage);
 		Terser terserSpy = Mockito.spy(t);
 
-
+		t.get("/PID" + "-13-12");
 		MapperEngine meng = new MapperEngine();
 		String[] testeListaKeys = {"/PID"};
 		String field = testeListaKeys[0];
-		meng.addContactRepetitions(terserSpy, field, terserSpy.get(field + "-13-7-1"), terserSpy.get(field + "-13-12-1"), terserSpy.get(field + "-14-7-1"), terserSpy.get(field + "-13-4-1"));
+		meng.addContactRepetitions(terserSpy, field, terserSpy.get(field + "-13-7"), terserSpy.get(field + "-13-12"), terserSpy.get(field + "-14-7"), terserSpy.get(field + "-13-4"));
 		assertEquals("X.400", terserSpy.get("PID-13(2)-3"));
 		assertEquals(toBeReturnedEmail, terserSpy.get("PID-13(2)-4"));
 		assertEquals(toBeReturnedTelf, terserSpy.get("PID-13(0)-12"));
@@ -387,8 +387,8 @@ class MapperEngineTest {
 	@Test
 	void testAfterFieldEmpty() throws HL7Exception {
 		String toBeReturned = "CUFC";
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS||20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS||20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		Terser t = new Terser(outMessage);
@@ -398,5 +398,18 @@ class MapperEngineTest {
 		String[] testeListaKeys = { "/MSH-6" };
 		meng.fieldAfterOperation(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.AFTER_FIELD, errors);
 		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
+	}
+
+	@Test
+	void testFix() throws HL7Exception {
+		String toBeReturned = "CUFC";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS||20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000-ST|||||||||||||||1^PORTUGAL||N\r" +
+		        "OBX||||||";
+
+		MapperEngine meng = new MapperEngine();
+		String fixedString = meng.fixMessage(messageString);
+		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
+
 	}
 }
