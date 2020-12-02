@@ -330,9 +330,6 @@ public class MapperEngine {
             volatileTerser.set("MSH-12", integration.getResultMessage().getVersion().getValue());
             Message outMessage = parser.parse(volatileMessage.encode());
             log.info(outMessage.getName() + " " + outMessage.getVersion());
-            for (String name : outMessage.getNames()) {
-                log.info(name);
-            }
             Terser tmp = new Terser(outMessage);
             for (Mapper mapper : mappers) {
                 Category mapperCategory = mapper.getCategory();
