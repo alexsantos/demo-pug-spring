@@ -30,6 +30,7 @@ import com.example.demopugspring.properties.Codes;
 import com.example.demopugspring.properties.CountryCodes;
 import com.example.demopugspring.properties.FacilitiesCodes;
 import com.example.demopugspring.properties.IdentificationCodes;
+import com.example.demopugspring.properties.InsurersCodes;
 import com.example.demopugspring.properties.MarriageStatusCodes;
 import com.example.demopugspring.properties.PropertiesCategoriesEnum;
 import com.example.demopugspring.service.ApplicationService;
@@ -75,6 +76,8 @@ public class MapperEngine {
     @Autowired
     MarriageStatusCodes marriageStatusCodes;
     @Autowired
+	InsurersCodes insurersCodes;
+	@Autowired
     IntegrationService integrationService;
     @Autowired
     IntegrationMapperService integrationMapperService;
@@ -108,6 +111,9 @@ public class MapperEngine {
             case MARRIAGE_STATUS:
                 codeInterface = marriageStatusCodes;
                 break;
+            case INSURERS_CODES:
+				codeInterface = insurersCodes;
+            	break;
             default:
                 throw new HL7Exception("Transcode propperty is incorrect.");
         }
@@ -191,10 +197,12 @@ public class MapperEngine {
                             break;
                         case JOIN:
                             StringBuilder joined = new StringBuilder();
+                            String valueToAppend;
                             log.info("Fields to join:" + value);
                             for (String val : value.split(",")) {
-                                log.info("Value for " + val + ":" + msg.get(val));
-                                joined.append(msg.get(val));
+								valueToAppend = msg.get(val);
+								log.info("Value for " + val + ":" + valueToAppend);
+								joined.append(valueToAppend);
                             }
                             log.info("joined fields:" + joined.toString());
                             tmp.set(field, joined.toString());

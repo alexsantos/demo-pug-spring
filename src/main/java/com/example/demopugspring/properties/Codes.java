@@ -9,11 +9,17 @@ public abstract class Codes {
 	private Environment env;
 
 	public String getDecodeCode(String encodedCode) {
-
+		String result;
 		if (encodedCode == null) {
 			encodedCode = "";
 		}
-		return env.getProperty(getSuffix() + "." + encodedCode);
+
+		if (getSuffix().isBlank()) {
+			result = env.getProperty(encodedCode);
+		} else {
+			result = env.getProperty(getSuffix() + "." + encodedCode);
+		}
+		return result;
 	}
 
 
