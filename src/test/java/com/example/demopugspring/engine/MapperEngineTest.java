@@ -15,6 +15,7 @@ import com.example.demopugspring.factory.ContextSingleton;
 import com.example.demopugspring.model.Mapper.Category;
 import com.example.demopugspring.properties.CountryCodes;
 import com.example.demopugspring.properties.IdentificationCodes;
+import com.example.demopugspring.properties.InsurersCodes;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
@@ -183,6 +184,31 @@ class MapperEngineTest {
 		meng.countryCodes = codes;
 		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
 		assertEquals(toBeReturned, terserSpy.get("/PID-28-1"));
+	}
+
+	@Test
+	void testTranscodingInsurance() throws HL7Exception {
+		String messageString = "MSH|^~\\&|GH|CCA|ehCOS|CCA|20201112103816||ADT^A31|1601940378|P|2.4|||AL\r\n"
+		        + "EVN|A08|20201112103800|||DFARAUJO\r\n"
+		        + "PID|||59594292^^^JMS^NS~1234^^^CCA^NS~1234553^^^HCD^NS~883885^^^CUFP^NS~123456789^^^NIF^PT~22810278800^^^N_BENEF^~32169833^^^N_BI^||TESTE^JULIA BABO CORREIA||19910302000000|F|||RUA DO 4 DE TESTE, N\\XBA\\ 88, 3\\XBA\\ DTO^^LISBOA^11^1350-275^1||^^PH^^^^^^^^^999999999~^^X.400^juliap@gmail.com|||U|||999999999||||PORTUGAL|||||1^PORTUGAL||N\r\n"
+		        + "PV1||Ficha-ID||||||||||||Ficha-ID|||||371643||1|S||||||||||||||||||||||20190326000000\r\n"
+		        + "IN1|1||CCA996||||||||||||||||||||||||||||||||||||||||||||||22810278800";
+		String toBeReturned = "202 ";
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		outMessage.parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		List<MapperError> errors = Mockito.mock(List.class);
+		MapperEngine meng = new MapperEngine();
+
+		InsurersCodes codes = Mockito.mock(InsurersCodes.class);
+		Mockito.doReturn(toBeReturned).when(codes).getDecodeCode(Mockito.contains("CCA996"));
+
+		String[] testeListaKeys = { "/INSURANCE/IN1-3" };
+		meng.insurersCodes = codes;
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "INSURERS-CODES", errors);
+		assertEquals(toBeReturned, terserSpy.get("/INSURANCE/IN1-3"));
 	}
 
 	@Test
