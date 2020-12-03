@@ -470,7 +470,7 @@ public class MapperEngine {
 		String messageContent = message.replaceAll("~(~)+", "~");
 		messageContent = messageContent.replace("|~", FIELD_SEPARADOR);
 		messageContent = messageContent.replace("~|", FIELD_SEPARADOR);
-
+		messageContent = messageContent.replace("~\r", "");
 		return messageContent;
     }
 
