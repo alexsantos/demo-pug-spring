@@ -488,8 +488,14 @@ public class MapperEngine {
 	 * @return a valid message, ready to be parsed.
 	 */
 	public static String fixMessage(String message) {
+		// Replace all LF (0x0A) characters with HL7-escaped CR sequence,
+		// "\.br\"
 		message = message.replace("\n", ESCAPED_CARRIAGE_RETURN);
 
+		// Unescapes all HL7-escaped hexadecimal sequences, "\X00\"
+		message = unescapeNonASCIISequences(message);
+
+		// Iterate each segment and apply specific fixes
 		StringTokenizer messageTokenizer = new StringTokenizer(message, SEGMENT_SEPARATOR);
 		String segment = "";
 		StringBuilder newMessageBuilder = new StringBuilder();
@@ -522,9 +528,6 @@ public class MapperEngine {
 		StringBuilder newSegmentBuilder = new StringBuilder();
 		for (int i = 0; i < fields.length; i++) {
 			switch (i) {
-			case 5:
-				newSegmentBuilder.append(getFixName(fields[i]));
-				break;
 			case 13:
 				newSegmentBuilder.append(getFixContactPhone(fields[i]));
 				break;
@@ -539,28 +542,6 @@ public class MapperEngine {
 		}
 
 		return newSegmentBuilder.toString();
-	}
-
-	/**
-	 * Unescapes HL7 hexadecimal escaped sequences in PID-5-1, PID-5-2 &
-	 * PID-5-3.
-	 * 
-	 * @param field5Old
-	 *            the content of PID-5
-	 * @return the converted PID-5 with its first three components escaped
-	 */
-	private static String getFixName(String field5Old) {
-		StringBuilder field5New = new StringBuilder();
-		
-		String[] names = field5Old.split("\\" + COMPONENT_SEPARATOR, 4);
-		for (int i = 0; i < 3 && i < names.length; i++) {
-			field5New.append(unescapeNonASCIISequences(names[i])).append(COMPONENT_SEPARATOR);
-		}
-		if (4 == names.length) {
-			field5New.append(names[3]);
-		}
-		
-		return field5New.toString();
 	}
 
 	/**
