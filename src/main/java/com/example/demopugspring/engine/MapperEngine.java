@@ -62,8 +62,7 @@ public class MapperEngine {
 
 	private static final String ESCAPED_CARRIAGE_RETURN = "\\.br\\";
 
-	private static final Pattern HL7_ESCAPED_CHAR_PATTERN = Pattern.compile("\\\\X[A-F0-9]{2}\\\\|\\\\S\\\\|\\\\E\\\\|\\\\R\\\\|\\\\F\\\\|\\\\T\\\\");
-	private static final Pattern ASCII_CHAR_TO_ESCAPE_PATTERN = Pattern.compile("[\\xC0-\\uFFFF]|\\\\|&|\\^|\\||~");
+	private static final Pattern HL7_ESCAPED_CHAR_PATTERN = Pattern.compile("\\\\X[A-F0-9]{2}\\\\");
 	
 	private static final Pattern OBX2_ED_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)ED");
 	private static final Pattern OBX2_PDF_BASE64_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)PDF_BASE64");
@@ -527,7 +526,8 @@ public class MapperEngine {
 	}
 
 	/**
-	 * Unescapes HL7-escaped sequences in PID-5-1, PID-5-2 & PID-5-3.
+	 * Unescapes HL7 hexadecimal escaped sequences in PID-5-1, PID-5-2 &
+	 * PID-5-3.
 	 * 
 	 * @param field5Old
 	 *            the content of PID-5
@@ -604,50 +604,8 @@ public class MapperEngine {
 	}
 
 	/**
-	 * Returns a new String with all non-ASCII sequences found in {@link str}
-	 * converted to an HL7-escaped sequence.
-	 * 
-	 * @param str
-	 *            the string to be converted
-	 * @return the converted string
-	 */
-	public static String escapeNonASCIISequences(String str) {
-		StringBuffer newString = new StringBuffer();
-		Matcher matcher = ASCII_CHAR_TO_ESCAPE_PATTERN.matcher(str);
-		while (matcher.find()) {
-			matcher.appendReplacement(newString, escapeNonASCIIChar(matcher.group()));
-		}
-		matcher.appendTail(newString);
-
-		return newString.toString();
-	}
-
-	/**
-	 * Converts a non-ASCII char to an HL7-escaped sequence.
-	 * 
-	 * @param chr
-	 *            the character to be converted
-	 * @return the converted char
-	 */
-	private static String escapeNonASCIIChar(String str) {
-		switch (str) {
-		case "&":
-			return "\\T\\";
-		case "^":
-			return "\\S\\";
-		case "\\":
-			return "\\E\\";
-		case "~":
-			return "\\R\\";
-		case "|":
-			return "\\F\\";
-		default:
-			return "\\X" + String.format("%04X", (int) str.charAt(0)) + '\\';
-		}
-	}
-
-	/**
-	 * Converts all HL7-escaped sequences found in {@link str} to ASCII.
+	 * Converts all HL7 hexadecimal escaped sequences of chars with code greater
+	 * than 127 found in {@link str} to ASCII.
 	 * 
 	 * @param str
 	 *            the string to be converted
@@ -657,7 +615,7 @@ public class MapperEngine {
 		StringBuffer newString = new StringBuffer();
 		Matcher matcher = HL7_ESCAPED_CHAR_PATTERN.matcher(str);
 		while (matcher.find()) {
-			matcher.appendReplacement(newString, String.valueOf(unescapeNonASCIIChar(matcher.group())));
+			matcher.appendReplacement(newString, unescapeNonASCIIChar(matcher.group()));
 		}
 		matcher.appendTail(newString);
 
@@ -665,26 +623,17 @@ public class MapperEngine {
 	}
 
 	/**
-	 * Converts an HL7-escaped sequence to ASCII.
+	 * Converts an HL7 hexadecimal escaped sequence to ASCII. If the code of the
+	 * resulting char has a decimal value smaller than 128, the output will be
+	 * the same as the input.
 	 * 
 	 * @param str
-	 *            the string to be converted,
+	 *            the string to be converted
 	 * @return the converted string
 	 */
-	private static char unescapeNonASCIIChar(String str) {
-		switch (str) {
-		case "\\T\\":
-			return '&';
-		case "\\S\\":
-			return '^';
-		case "\\E\\":
-			return '\\';
-		case "\\R\\":
-			return '~';
-		case "\\F\\":
-			return '|';
-		default:
-			return (char) Integer.parseInt(str.substring(2, 4), 16);
-		}
+	private static String unescapeNonASCIIChar(String str) {
+		int charCode = Integer.parseInt(str.substring(2, 4), 16);
+
+		return (charCode >= 128) ? String.valueOf((char) charCode) : str;
 	}
 }
