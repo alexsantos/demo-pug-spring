@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +62,8 @@ public class MapperEngine {
 
 	private static final String ESCAPED_CARRIAGE_RETURN = "\\.br\\";
 
+	private static final Pattern HL7_ESCAPED_CHAR_PATTERN = Pattern.compile("\\\\X[A-F0-9]{2}\\\\");
+	
 	private static final Pattern OBX2_ED_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)ED");
 	private static final Pattern OBX2_PDF_BASE64_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)PDF_BASE64");
 	private static final Pattern OBX5_JVBER_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|ED\\|.{0,250}\\|.{0,20}\\|)JVBER");
@@ -508,13 +511,40 @@ public class MapperEngine {
 	}
 
 	private static String fixPID(String segment) {
+		String field5Old = getFieldToFix(segment, 5);
+		String field5 = getFixName(field5Old);
+
 		String field13Old = getFieldToFix(segment, 13);
 		String field13 = getFixContactPhone(field13Old);
 		
 		String field14Old = getFieldToFix(segment, 14);
 		String field14 = getFixContactPhone(field14Old);
 
-		return segment.replaceFirst(Pattern.quote(field13Old), field13).replaceFirst(Pattern.quote(field14Old), field14);
+		return segment.replaceFirst(Pattern.quote(field5Old), field5)
+				.replaceFirst(Pattern.quote(field13Old), field13)
+				.replaceFirst(Pattern.quote(field14Old), field14);
+	}
+
+	/**
+	 * Unescapes HL7 hexadecimal escaped sequences in PID-5-1, PID-5-2 &
+	 * PID-5-3.
+	 * 
+	 * @param field5Old
+	 *            the content of PID-5
+	 * @return the converted PID-5 with its first three components escaped
+	 */
+	private static String getFixName(String field5Old) {
+		StringBuilder field5New = new StringBuilder();
+		
+		String[] names = field5Old.split("\\" + COMPONENT_SEPARATOR, 4);
+		for (int i = 0; i < 3 && i < names.length; i++) {
+			field5New.append(unescapeNonASCIISequences(names[i])).append(COMPONENT_SEPARATOR);
+		}
+		if(4 == field5New.length()) {
+			field5New.append(names[3]);
+		}
+		
+		return field5New.toString();
 	}
 
 	/**
@@ -546,7 +576,6 @@ public class MapperEngine {
 		return field13New.toString().replaceAll("\\^{2,}$", "");
 	}
 
-
 	/**
 	 * Get Field number i of the Segment. It uses FIELD_SEPARADOR.
 	 * 
@@ -572,5 +601,39 @@ public class MapperEngine {
 		String newSegment = OBX2_ED_PATTERN.matcher(segment).replaceFirst("TX");
 		newSegment = OBX2_PDF_BASE64_PATTERN.matcher(newSegment).replaceFirst("ED");
 		return OBX5_JVBER_PATTERN.matcher(newSegment).replaceFirst("^^^^JVBER");
+	}
+
+	/**
+	 * Converts all HL7 hexadecimal escaped sequences of chars with code greater
+	 * than 127 found in {@link str} to ASCII.
+	 * 
+	 * @param str
+	 *            the string to be converted
+	 * @return the converted string
+	 */
+	public static String unescapeNonASCIISequences(String str) {
+		StringBuffer newString = new StringBuffer();
+		Matcher matcher = HL7_ESCAPED_CHAR_PATTERN.matcher(str);
+		while (matcher.find()) {
+			matcher.appendReplacement(newString, unescapeNonASCIIChar(matcher.group()));
+		}
+		matcher.appendTail(newString);
+
+		return newString.toString();
+	}
+
+	/**
+	 * Converts an HL7 hexadecimal escaped sequence to ASCII. If the code of the
+	 * resulting char has a decimal value smaller than 128, the output will be
+	 * the same as the input.
+	 * 
+	 * @param str
+	 *            the string to be converted
+	 * @return the converted string
+	 */
+	private static String unescapeNonASCIIChar(String str) {
+		int charCode = Integer.parseInt(str.substring(2, 4), 16);
+
+		return (charCode >= 128) ? String.valueOf((char) charCode) : str;
 	}
 }

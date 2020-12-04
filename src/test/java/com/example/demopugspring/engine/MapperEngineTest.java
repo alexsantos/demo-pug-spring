@@ -2,10 +2,13 @@ package com.example.demopugspring.engine;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -28,8 +31,8 @@ class MapperEngineTest {
 
 	@Test
 	void testReplace() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||198212090000|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||198212090000|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		String toBeReturned = "19821209";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
@@ -47,8 +50,8 @@ class MapperEngineTest {
 
 	@Test
 	void testReplaceEmpty() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO|||M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO|||M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		String toBeReturned = "19821209";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
@@ -64,8 +67,8 @@ class MapperEngineTest {
 
 	@Test
 	void testAddSNSOperation() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturned = "1234512345";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -85,8 +88,8 @@ class MapperEngineTest {
 
 	@Test
 	void testAddContact() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^teste@teste.com^^^999999999|^^^^^^222222222||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^teste@teste.com^^^999999999|^^^^^^222222222||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturnedTelf = "999999999";
 		String toBeReturnedDois = "222222222";
 		String toBeReturnedEmail = "teste@teste.com";
@@ -111,8 +114,8 @@ class MapperEngineTest {
 
 	@Test
 	void testClearIfOperation() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toFilter = "CUFC";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -128,8 +131,8 @@ class MapperEngineTest {
 
 	@Test
 	void testClearIfOperationPatient() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toFilter = "CUFC";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -145,8 +148,8 @@ class MapperEngineTest {
 
 	@Test
 	void testAddSNSOperationPatient() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturned = "1234512345";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		Terser t = new Terser(outMessage);
@@ -165,8 +168,8 @@ class MapperEngineTest {
 
 	@Test
 	void testTranscoding() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturned = "PT";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -213,8 +216,8 @@ class MapperEngineTest {
 
 	@Test
 	void testTranscodingPatient() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturned = "PT";
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -236,8 +239,8 @@ class MapperEngineTest {
 
 	@Test
 	void testTranscodingRepetion() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturned = "PT";
 		String toBeReturned2 = "NI";
 
@@ -265,8 +268,8 @@ class MapperEngineTest {
 	@Test
 	void testAfterField() throws HL7Exception {
 		String toBeReturned = "CUFC";
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		Terser t = new Terser(outMessage);
@@ -280,8 +283,8 @@ class MapperEngineTest {
 
 	@Test
 	void testTranscodingEmpty() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r\n" +
-		        "PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 		String toBeReturned = null;
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -303,8 +306,8 @@ class MapperEngineTest {
 
 	@Test
 	void testReplaceOpearion() throws HL7Exception {
-		String messageString = "MSH|^~\\&|GH|CCA|ehCOS|CCA|20201112103816||ADT^A31|1601940378|P|2.4|||AL\r\n"
-				+ "PID|||59594292^^^JMS^NS~1234^^^CCA^NS~1234553^^^HCD^NS~883885^^^CUFP^NS~123456789^^^NIF^PT~22810278800^^^N_BENEF^~32169833^^^N_BI^||TESTE^JULIA BABO CORREIA||19910302000000|F|||RUA DO 4 DE TESTE, N\\XBA\\ 88, 3\\XBA\\ DTO^^LISBOA^11^1350-275^1||^^PH^^^^^^^^^999999999~^^X.400^juliap@gmail.com|||U|||999999999||||PORTUGAL|||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CCA|ehCOS|CCA|20201112103816||ADT^A31|1601940378|P|2.4|||AL\r"
+				+ "PID|||59594292^^^JMS^NS~1234^^^CCA^NS~1234553^^^HCD^NS~883885^^^CUFP^NS~123456789^^^NIF^PT~22810278800^^^N_BENEF^~32169833^^^N_BI^||TESTE^JULIA BABO CORREIA||19910302000000|F|||RUA DO 4 DE TESTE, N\\XBA\\ 88, 3\\XBA\\ DTO^^LISBOA^11^1350-275^1||^^PH^^^^^^^^^999999999~^^X.400^juliap@gmail.com|||U|||999999999||||PORTUGAL|||||1^PORTUGAL||N\r";
 
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		outMessage.parse(messageString);
@@ -324,8 +327,8 @@ class MapperEngineTest {
 	@Test
 	void testJoinFieldsPatient() throws HL7Exception {
 		String toBeReturned = "995896186";
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		Terser t = new Terser(outMessage);
@@ -342,8 +345,8 @@ class MapperEngineTest {
 	@Test
 	void testField() throws HL7Exception {
 		String toBeReturned = "CUFC";
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		Terser t = new Terser(outMessage);
@@ -359,8 +362,8 @@ class MapperEngineTest {
 	@Test
 	void testText() throws HL7Exception {
 		String toBeReturned = "INTEGRACAO";
-		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r\n" +
-				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r\n";
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
 
 		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
 		Terser t = new Terser(outMessage);
@@ -407,6 +410,65 @@ class MapperEngineTest {
 
 		String fixedString = MapperEngine.fixMessage(messageString);
 
+		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
+	}
+
+	void testFixMessageWithEscapedChars() {
+		Pattern pattern = Pattern.compile("\\\\X[A-F0-9]{2}\\\\");
+
+		String messageString = "MSH|^~\\&|CWM|CCB|PACS_CCB|CCB|20201203131143||ORU^R01|5b7f2609-9977-4a56-b01c-880a6325f1d7|P|2.4|||AL\r"
+				+ "PID||JMS5933504|JMS5933504^^^JMS^NS|^^^N_BI|CARONA^MARIA ROSA ANUNCIA\\XC7\\\\XC3\\O^||19700922|F|||ESTRADA SERRA DO SOCORRO Nº  10^^ENXARA DO BISPO^^2665-059^||^^^^^^919584765|^^^^^^|||||378783230|||||||||||N\r"
+				+ "PV1||Consultas|||||||||1||||||||5050823|||S\r"
+				+ "ORC|SC|1392472|CCB2020027482||CM||1.000\r"
+				+ "OBR||1392472|CCB2020027482|62000125^ECO PARTES MOLES - PAREDE ABDOMINAL|||20201203113619|20201203131143||||||||||CCB2020027482|||US|20201203011132||US|||1^^^20201203011132|||||30363|30363|30363&&Lu\\XED\\s Arag\\XE3\\o Mata||||||||||||CCB2020027482^^ACCESSION_NUMBER\r"
+				+ "OBX|1|ED|949922|| \n"
+				+ "Ecografia da parede abdominal\n"
+				+ "Observamos diastase dos rectos na regiao supra-umbilical, com cerca de 31 mm de diametro transversal, sendo mais dificil a avaliacao da sua extensao longitudinal, cerca de 5 cm.\n"
+				+ "Na regiao epigastrica, os rectos distam cerca de 14 mm e na regiao infra-umbilical, nao ha qualquer diastase.\n"
+				+ "Observamos uma hernia supra-umbilical, a cerca de 2,5 mm acima do umbigo. Mede cerca de 3 cm e apresentam um colo de 10 x 7 mm, com saida de gordura. Esta hernia tem uma topografia ligeiramente paramediana esquerda. n"
+				+ "Em topografia adjacente, ligeiramente mais superior e paramediana direita, existe uma outra hernia com cerca de 11 x 4 mm com um colo de 3 mm, tambem com saida de gordura. Parece-nos que existem dois colos separados.\n"
+				+ "Nao observamos sinais seguros da pequena hernia umbilical que a clinica refere, provavelmente pelas pequenas dimensoes e pela interposicao de ar que nao foi possivel ultrapassar e que causa artefactos.\n"
+				+ "\n"
+				+ "\n"
+				+ "Dr(a): Luis Aragao Mata\n"
+				+ "OM: 30363||||||F\r";
+		assertTrue(pattern.matcher(messageString).matches());
+
+		String fixedString = MapperEngine.fixMessage(messageString);
+
+		assertFalse(pattern.matcher(fixedString).matches());
+		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
+	}
+
+	void testFixMessageWithEscapedAndSpecialChars() {
+		Pattern pattern = Pattern.compile("\\\\X[A-F0-9]{2}\\\\");
+
+		String messageString = "MSH|^~\\&|CWM|CCB|PACS_CCB|CCB|20201203131143||ORU^R01|5b7f2609-9977-4a56-b01c-880a6325f1d7|P|2.4|||AL\r"
+				+ "PID||JMS5933504|JMS5933504^^^JMS^NS|^^^N_BI|CARONA^MARIA ROSA ANUNCIA\\XC7\\\\XC3\\O^||19700922|F|||ESTRADA SERRA DO SOCORRO Nº  10^^ENXARA DO BISPO^^2665-059^||^^^^^^919584765|^^^^^^|||||378783230|||||||||||N\r"
+				+ "PV1||Consultas|||||||||1||||||||5050823|||S\r"
+				+ "ORC|SC|1392472|CCB2020027482||CM||1.000\r"
+				+ "OBR||1392472|CCB2020027482|62000125^ECO PARTES MOLES - PAREDE ABDOMINAL|||20201203113619|20201203131143||||||||||CCB2020027482|||US|20201203011132||US|||1^^^20201203011132|||||30363|30363|30363&&Lu\\XED\\s Arag\\XE3\\o Mata||||||||||||CCB2020027482^^ACCESSION_NUMBER\r"
+				+ "OBX|1|ED|949922|| \n"
+				+ "\\T\\Ecografia da parede abdominal\n"
+				+ "\\S\\Observamos diastase dos rectos na regiao supra-umbilical, com cerca de 31 mm de diametro transversal, sendo mais dificil a avaliacao da sua extensao longitudinal, cerca de 5 cm.\n"
+				+ "\\E\\Na regiao epigastrica, os rectos distam cerca de 14 mm e na regiao infra-umbilical, nao ha qualquer diastase.\n"
+				+ "\\R\\Observamos uma hernia supra-umbilical, a cerca de 2,5 mm acima do umbigo. Mede cerca de 3 cm e apresentam um colo de 10 x 7 mm, com saida de gordura. Esta hernia tem uma topografia ligeiramente paramediana esquerda. n"
+				+ "\\F\\Em topografia adjacente, ligeiramente mais superior e paramediana direita, existe uma outra hernia com cerca de 11 x 4 mm com um colo de 3 mm, tambem com saida de gordura. Parece-nos que existem dois colos separados.\n"
+				+ "Nao observamos sinais seguros da pequena hernia umbilical que a clinica refere, provavelmente pelas pequenas dimensoes e pela interposicao de ar que nao foi possivel ultrapassar e que causa artefactos.\n"
+				+ "\n"
+				+ "\n"
+				+ "Dr(a): Luis Aragao Mata\n"
+				+ "OM: 30363||||||F\r";
+		assertTrue(pattern.matcher(messageString).matches());
+
+		String fixedString = MapperEngine.fixMessage(messageString);
+
+		assertFalse(pattern.matcher(fixedString).matches());
+		assertTrue(fixedString.contains("\\T\\"));
+		assertTrue(fixedString.contains("\\S\\"));
+		assertTrue(fixedString.contains("\\E\\"));
+		assertTrue(fixedString.contains("\\R\\"));
+		assertTrue(fixedString.contains("\\F\\"));
 		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
 	}
 
