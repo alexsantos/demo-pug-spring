@@ -52,23 +52,23 @@ import ca.uhn.hl7v2.util.Terser;
 @Service
 public class MapperEngine {
 
-	private static final int NUMBER_PID_SEQ = 39;
+	private static final Logger log = LoggerFactory.getLogger(MapperEngine.class);
 
+	private static final String SEGMENT_SEPARATOR = "\r";
+	private static final String FIELD_SEPARATOR = "|";
 	private static final String COMPONENT_SEPARATOR = "^";
-
-	private static final String FIELD_SEPARADOR = "|";
-
-	private static final String OPERATIONS_PACKAGE = "operation";
 
 	private static final String ESCAPED_CARRIAGE_RETURN = "\\.br\\";
 
 	private static final Pattern HL7_ESCAPED_CHAR_PATTERN = Pattern.compile("\\\\X[A-F0-9]{2}\\\\");
+
+	private static final int NUMBER_PID_SEQ = 39;
 	
 	private static final Pattern OBX2_ED_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)ED");
 	private static final Pattern OBX2_PDF_BASE64_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|)PDF_BASE64");
 	private static final Pattern OBX5_JVBER_PATTERN = Pattern.compile("(?<=OBX\\|\\d{0,4}\\|ED\\|.{0,250}\\|.{0,20}\\|)JVBER");
 
-    private static final Logger log = LoggerFactory.getLogger(MapperEngine.class);
+	private static final String OPERATIONS_PACKAGE = "operation";
 
     @Autowired
     IdentificationCodes identificationCodes;
@@ -472,8 +472,8 @@ public class MapperEngine {
 
     private String cleanMessage(String message) {
 		String messageContent = message.replaceAll("~(~)+", "~");
-		messageContent = messageContent.replace("|~", FIELD_SEPARADOR);
-		messageContent = messageContent.replace("~|", FIELD_SEPARADOR);
+		messageContent = messageContent.replace("|~", FIELD_SEPARATOR);
+		messageContent = messageContent.replace("~|", FIELD_SEPARATOR);
 		messageContent = messageContent.replace("~\r", "");
 		return messageContent;
     }
@@ -490,7 +490,7 @@ public class MapperEngine {
 	public static String fixMessage(String message) {
 		message = message.replace("\n", ESCAPED_CARRIAGE_RETURN);
 
-		StringTokenizer messageTokenizer = new StringTokenizer(message, "\r");
+		StringTokenizer messageTokenizer = new StringTokenizer(message, SEGMENT_SEPARATOR);
 		String segment = "";
 		StringBuilder newMessageBuilder = new StringBuilder();
 
@@ -498,32 +498,47 @@ public class MapperEngine {
 			segment = messageTokenizer.nextToken();
 			if (Character.isWhitespace(segment.charAt(0)))
 				segment = segment.stripLeading();
-			if (segment.startsWith("OBX")) {
-				newMessageBuilder.append(fixOBX(segment));
-			} else if (segment.startsWith("PID")) {
+
+			switch (segment.substring(0, 3)) {
+			case "PID":
 				newMessageBuilder.append(fixPID(segment));
-			} else {
+				break;
+			case "OBX":
+				newMessageBuilder.append(fixOBX(segment));
+				break;
+			default:
 				newMessageBuilder.append(segment);
 			}
-			newMessageBuilder.append("\r");
+
+			newMessageBuilder.append(SEGMENT_SEPARATOR);
 		}
 
 		return newMessageBuilder.toString();
 	}
 
 	private static String fixPID(String segment) {
-		String field5Old = getFieldToFix(segment, 5);
-		String field5 = getFixName(field5Old);
+		String[] fields = segment.split("\\" + FIELD_SEPARATOR);
 
-		String field13Old = getFieldToFix(segment, 13);
-		String field13 = getFixContactPhone(field13Old);
-		
-		String field14Old = getFieldToFix(segment, 14);
-		String field14 = getFixContactPhone(field14Old);
+		StringBuilder newSegmentBuilder = new StringBuilder();
+		for (int i = 0; i < fields.length; i++) {
+			switch (i) {
+			case 5:
+				newSegmentBuilder.append(getFixName(fields[i]));
+				break;
+			case 13:
+				newSegmentBuilder.append(getFixContactPhone(fields[i]));
+				break;
+			case 14:
+				newSegmentBuilder.append(getFixContactPhone(fields[i]));
+				break;
+			default:
+				newSegmentBuilder.append(fields[i]);
+			}
 
-		return segment.replaceFirst(Pattern.quote(field5Old), field5)
-				.replaceFirst(Pattern.quote(field13Old), field13)
-				.replaceFirst(Pattern.quote(field14Old), field14);
+			newSegmentBuilder.append(FIELD_SEPARATOR);
+		}
+
+		return newSegmentBuilder.toString();
 	}
 
 	/**
@@ -577,18 +592,6 @@ public class MapperEngine {
 		return field13New.toString().replaceAll("\\^{2,}$", "");
 	}
 
-	/**
-	 * Get Field number i of the Segment. It uses FIELD_SEPARADOR.
-	 * 
-	 * @param segment
-	 * @param i,
-	 *            the order of field to get
-	 * @return the field number i of the segment
-	 */
-	public static String getFieldToFix(String segment, int i) {
-		String[] messageTokenizer = segment.split("\\" + FIELD_SEPARADOR);
-		return messageTokenizer[i];
-	}
 
 	/**
 	 * Returns a new string which, by fixing the OBX-2 and OBX-5 fields, should
