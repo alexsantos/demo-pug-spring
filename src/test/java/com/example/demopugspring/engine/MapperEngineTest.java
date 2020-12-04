@@ -2,10 +2,13 @@ package com.example.demopugspring.engine;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -381,6 +384,33 @@ class MapperEngineTest {
 
 		String fixedString = MapperEngine.fixMessage(messageString);
 
+		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
+	}
+
+	void testFixMessageWithEscapedChars() {
+		Pattern pattern = Pattern.compile("\\\\X[A-F0-9]{2}\\\\|\\\\S\\\\|\\\\E\\\\|\\\\R\\\\|\\\\F\\\\|\\\\T\\\\");
+
+		String messageString = "MSH|^~\\&|CWM|CCB|PACS_CCB|CCB|20201203131143||ORU^R01|5b7f2609-9977-4a56-b01c-880a6325f1d7|P|2.4|||AL\r"
+				+ "PID||JMS5933504|JMS5933504^^^JMS^NS|^^^N_BI|CARONA^MARIA ROSA ANUNCIA\\XC7\\\\XC3\\O^||19700922|F|||ESTRADA SERRA DO SOCORRO Nº  10^^ENXARA DO BISPO^^2665-059^||^^^^^^919584765|^^^^^^|||||378783230|||||||||||N\r"
+				+ "PV1||Consultas|||||||||1||||||||5050823|||S\r"
+				+ "ORC|SC|1392472|CCB2020027482||CM||1.000\r"
+				+ "OBR||1392472|CCB2020027482|62000125^ECO PARTES MOLES - PAREDE ABDOMINAL|||20201203113619|20201203131143||||||||||CCB2020027482|||US|20201203011132||US|||1^^^20201203011132|||||30363|30363|30363&&Lu\\XED\\s Arag\\XE3\\o Mata||||||||||||CCB2020027482^^ACCESSION_NUMBER\r"
+				+ "OBX|1|ED|949922|| \n"
+				+ "Ecografia da parede abdominal\n"
+				+ "Observamos diastase dos rectos na regiao supra-umbilical, com cerca de 31 mm de diametro transversal, sendo mais dificil a avaliacao da sua extensao longitudinal, cerca de 5 cm.\n"
+				+ "Na regiao epigastrica, os rectos distam cerca de 14 mm e na regiao infra-umbilical, nao ha qualquer diastase.\n"
+				+ "Observamos uma hernia supra-umbilical, a cerca de 2,5 mm acima do umbigo. Mede cerca de 3 cm e apresentam um colo de 10 x 7 mm, com saida de gordura. Esta hernia tem uma topografia ligeiramente paramediana esquerda. n"
+				+ "Em topografia adjacente, ligeiramente mais superior e paramediana direita, existe uma outra hernia com cerca de 11 x 4 mm com um colo de 3 mm, tambem com saida de gordura. Parece-nos que existem dois colos separados.\n"
+				+ "Nao observamos sinais seguros da pequena hernia umbilical que a clinica refere, provavelmente pelas pequenas dimensoes e pela interposicao de ar que nao foi possivel ultrapassar e que causa artefactos.\n"
+				+ "\n"
+				+ "\n"
+				+ "Dr(a): Luis Aragao Mata\n"
+				+ "OM: 30363||||||F\r";
+		assertTrue(pattern.matcher(messageString).matches());
+
+		String fixedString = MapperEngine.fixMessage(messageString);
+
+		assertFalse(pattern.matcher(fixedString).matches());
 		assertDoesNotThrow(() -> ContextSingleton.getInstance().getPipeParser().parse(fixedString));
 	}
 
