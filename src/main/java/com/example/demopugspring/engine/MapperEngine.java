@@ -540,7 +540,7 @@ public class MapperEngine {
 		for (int i = 0; i < 3 && i < names.length; i++) {
 			field5New.append(unescapeNonASCIISequences(names[i])).append(COMPONENT_SEPARATOR);
 		}
-		if(4 == field5New.length()) {
+		if (4 == names.length) {
 			field5New.append(names[3]);
 		}
 		
