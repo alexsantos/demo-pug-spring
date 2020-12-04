@@ -60,7 +60,7 @@ public class MapperEngine {
 
 	private static final String ESCAPED_CARRIAGE_RETURN = "\\.br\\";
 
-	private static final Pattern HL7_ESCAPED_CHAR_PATTERN = Pattern.compile("\\\\X[A-F0-9]{2}\\\\");
+	private static final Pattern HL7_ESCAPED_HEX_PATTERN = Pattern.compile("\\\\X[89A-F][0-9A-F]\\\\");
 
 	private static final int NUMBER_PID_SEQ = 39;
 	
@@ -492,7 +492,8 @@ public class MapperEngine {
 		// "\.br\"
 		message = message.replace("\n", ESCAPED_CARRIAGE_RETURN);
 
-		// Unescapes all HL7-escaped hexadecimal sequences, "\X00\"
+		// Unescapes all HL7-escaped hexadecimal sequences greater than decimal
+		// 127, "\X80\"
 		message = unescapeNonASCIISequences(message);
 
 		// Iterate each segment and apply specific fixes
@@ -589,8 +590,8 @@ public class MapperEngine {
 	}
 
 	/**
-	 * Converts all HL7 hexadecimal escaped sequences of chars with code greater
-	 * than 127 found in {@link str} to ASCII.
+	 * Converts all HL7-escaped hexadecimal sequences with code greater than 127
+	 * found in {@link str} to ASCII.
 	 * 
 	 * @param str
 	 *            the string to be converted
@@ -598,9 +599,9 @@ public class MapperEngine {
 	 */
 	public static String unescapeNonASCIISequences(String str) {
 		StringBuffer newString = new StringBuffer();
-		Matcher matcher = HL7_ESCAPED_CHAR_PATTERN.matcher(str);
+		Matcher matcher = HL7_ESCAPED_HEX_PATTERN.matcher(str);
 		while (matcher.find()) {
-			matcher.appendReplacement(newString, unescapeNonASCIIChar(matcher.group()));
+			matcher.appendReplacement(newString, String.valueOf(unescapeNonASCIIChar(matcher.group())));
 		}
 		matcher.appendTail(newString);
 
@@ -608,17 +609,13 @@ public class MapperEngine {
 	}
 
 	/**
-	 * Converts an HL7 hexadecimal escaped sequence to ASCII. If the code of the
-	 * resulting char has a decimal value smaller than 128, the output will be
-	 * the same as the input.
+	 * Converts an HL7-escaped hexadecimal sequence to ASCII.
 	 * 
 	 * @param str
-	 *            the string to be converted
-	 * @return the converted string
+	 *            the string sequence to be converted
+	 * @return the converted char
 	 */
-	private static String unescapeNonASCIIChar(String str) {
-		int charCode = Integer.parseInt(str.substring(2, 4), 16);
-
-		return (charCode >= 128) ? String.valueOf((char) charCode) : str;
+	private static char unescapeNonASCIIChar(String str) {
+		return (char) Integer.parseInt(str.substring(2, 4), 16);
 	}
 }
