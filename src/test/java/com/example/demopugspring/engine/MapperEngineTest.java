@@ -3,6 +3,7 @@ package com.example.demopugspring.engine;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -84,6 +85,25 @@ class MapperEngineTest {
 		meng.addFieldSNS(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/PID-19", errors);
 		assertEquals(toBeReturned, terserSpy.get("PID-3(2)"));
 		assertEquals("SNS", terserSpy.get("PID-3(2)-4"));
+	}
+
+	@Test
+	void testAddSNSEmptyOperation() throws HL7Exception {
+		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|CUFC|20201117172651||ADT^A31|1604236349|P|2.4|||AL\r" +
+				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|995896186^^^NIF^PT|SEGUNDO||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
+		String toBeReturned = "";
+		Message outMessage = ContextSingleton.getInstance().getPipeParser().parse(messageString);
+		outMessage.parse(messageString);
+		Terser t = new Terser(outMessage);
+		Terser terserSpy = Mockito.spy(t);
+
+		Mockito.doReturn(toBeReturned).when(terserSpy).get(Mockito.contains("/PID-19"));
+
+		// outMessage.get(name, rep)
+		MapperEngine meng = new MapperEngine();
+		String[] testeListaKeys = { "/PID-3" };
+		meng.addFieldSNS(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/PID-19", errors);
+		assertNotEquals("SNS", terserSpy.get("PID-3(2)-4"));
 	}
 
 	@Test

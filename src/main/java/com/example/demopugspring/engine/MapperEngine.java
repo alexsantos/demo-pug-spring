@@ -461,14 +461,15 @@ public class MapperEngine {
     }
 
     public void addFieldSNS(Terser tmp, Terser msg, List<String> key, String value, List<MapperError> errorList) throws HL7Exception {
+		if (!StringUtils.isEmpty(msg.get(value))) {
+			String[] field_split = key.get(0).split("-");
+			Segment segmentTarget = tmp.getSegment(field_split[0]);
 
-        String[] field_split = key.get(0).split("-");
-        Segment segmentTarget = tmp.getSegment(field_split[0]);
-
-        int numberRepTarget = tmp.getSegment(field_split[0]).getField(Integer.valueOf(field_split[1])).length;
-        Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 1, 1, msg.get(value));
-        Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
-    }
+			int numberRepTarget = tmp.getSegment(field_split[0]).getField(Integer.valueOf(field_split[1])).length;
+			Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 1, 1, msg.get(value));
+			Terser.set(segmentTarget, Integer.valueOf(field_split[1]), numberRepTarget, 4, 1, "SNS");
+		}
+	}
 
     private String cleanMessage(String message) {
 		String messageContent = message.replaceAll("~(~)+", "~");
