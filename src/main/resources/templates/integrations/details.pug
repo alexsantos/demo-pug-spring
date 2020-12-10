@@ -59,9 +59,9 @@ html(lang="en")
                                                     input(type="checkbox" id="included" name="activeMappers" value=item.id)
                                             td
                                                 .pure-button-group(role="group")
-                                                    a.pure-button.button-small.up(href="#")
+                                                    a.pure-button.button-small.up()
                                                         i.fas.fa-arrow-up
-                                                    a.pure-button.button-small.down(href="#")
+                                                    a.pure-button.button-small.down()
                                                         i.fas.fa-arrow-down
                                         - i = i + 1
                             p
@@ -82,6 +82,7 @@ html(lang="en")
                                             td=item.category
                                             td
                                                input(type="checkbox" id="included" name="mappers" value=item.id)
+                                               input(type="hidden" id="activeMapper" name="activeMappers" value=item.id)
                             p
                                 button.pure-button.pure-button-primary(type="submit") Update Integration
     script.
