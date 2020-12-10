@@ -20,6 +20,7 @@ html(lang="en")
                             input(type="text" id="code" name="code" value=message.code)
                             label(for="event") Event
                             input(type="text" id="event" name="event" value=message.event)
+                            label(for="version") Version
                             select(id="version" name="version")
                                 each version in versions
                                     if (version == message.version)
