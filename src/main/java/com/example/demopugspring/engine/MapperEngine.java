@@ -196,7 +196,7 @@ public class MapperEngine {
                             tmp.set(value, msg.get(field));
                             break;
                         case SEGMENT:
-                            tmp.getSegment(field).parse(field);
+						tmp.getSegment(field).parse(value);
                             break;
                         case JOIN:
                             StringBuilder joined = new StringBuilder();
