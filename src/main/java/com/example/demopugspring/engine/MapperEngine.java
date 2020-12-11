@@ -24,7 +24,6 @@ import com.example.demopugspring.model.IntegrationMapper;
 import com.example.demopugspring.model.Mapper;
 import com.example.demopugspring.model.Mapper.Category;
 import com.example.demopugspring.operation.ClearFilteredOperation;
-import com.example.demopugspring.operation.FieldOperation;
 import com.example.demopugspring.operation.ReplaceOperation;
 import com.example.demopugspring.operation.SwapOperation;
 import com.example.demopugspring.properties.Codes;
@@ -38,7 +37,6 @@ import com.example.demopugspring.service.ApplicationService;
 import com.example.demopugspring.service.IntegrationMapperService;
 import com.example.demopugspring.service.IntegrationService;
 import com.example.demopugspring.service.MessageService;
-import com.example.demopugspring.visitor.MapperVisitor;
 import com.example.demopugspring.visitor.TranscodingVisitor;
 
 import ca.uhn.hl7v2.HL7Exception;
@@ -89,15 +87,8 @@ public class MapperEngine {
     @Autowired
     MessageService messageService;
 
-    private void textFields(String field, String text, Terser encodedMessage, Terser decodedMessage) throws HL7Exception {
-        MapperVisitor visitor;
 
-        visitor = new MapperVisitor(field, text);
-        visitor.start(decodedMessage.getSegment(field.split("-")[0]).getMessage());
-    }
-
-
-    public void transcode(Terser tmp, List<String> keys, String value, List<MapperError> errorList) throws HL7Exception {
+	public void transcode(Terser tmp, List<String> keys, String value) throws HL7Exception {
         TranscodingVisitor transcodeVisitor;
         Codes codeInterface;
         PropertiesCategoriesEnum property = PropertiesCategoriesEnum.valueOfProperty(value);
@@ -118,15 +109,13 @@ public class MapperEngine {
 				codeInterface = insurersCodes;
             	break;
             default:
-                throw new HL7Exception("Transcode propperty is incorrect.");
+				throw new HL7Exception("Transcode propperty is incorrect.");
         }
 
         for (String key : keys) {
             transcodeVisitor = new TranscodingVisitor(key, value, codeInterface);
             transcodeVisitor.start(tmp.getSegment(key.split("-")[0]).getMessage());
         }
-
-
     }
 
     /**
@@ -146,7 +135,7 @@ public class MapperEngine {
 
                     int i = 0;
 
-                    while (true) {
+					while (toContinue) {
 
                         var fieldRep = field.replace("#", String.valueOf(i));
 
@@ -179,7 +168,6 @@ public class MapperEngine {
                                 errorList.add(new MapperError(field, "No Category defined as: " + type));
                         }
                         i++;
-                        break;
                     }
                 } else {
                     log.info("No # on field - just a simple map");
@@ -225,19 +213,10 @@ public class MapperEngine {
         });
     }
 
-    public void swapAfterOperation(Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
+    public void swapOperation(Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
         SwapOperation swapOperation = new SwapOperation(value, fields);
         try {
             swapOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
-        } catch (HL7Exception e) {
-            errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));
-        }
-    }
-
-    public void fieldAfterOperation(Terser msg, Terser tmp, List<String> fields, String value, Mapper.Category type, List<MapperError> errorList) {
-        FieldOperation fieldOperation = new FieldOperation(value, fields);
-        try {
-            fieldOperation.doOperation(tmp.getSegment(value.split("-")[0]).getMessage());
         } catch (HL7Exception e) {
             errorList.add(new MapperError(e.getError().name(), e.getDetail().toString()));
         }
@@ -378,10 +357,7 @@ public class MapperEngine {
                 } else {
                     switch (mapperCategory) {
                         case TEXT:
-                        case FIELD:
-                        case SWAP:
                         case SEGMENT:
-                        case JOIN:
                         case NUMERIC:
                             log.info("TEXT or FIELD");
                             mapper(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
@@ -393,17 +369,14 @@ public class MapperEngine {
                         case ADD_SNS:
                             addFieldSNS(tmp, msg, mapper.getKey(), mapper.getValue(), errorList);
                             break;
-                        case AFTER_JOIN_FIELDS:
+						case JOIN:
                             joinFields(tmp, mapper.getKey(), mapper.getValue(), errorList);
                             break;
-                        case AFTER_FIELD:
-                            fieldAfterOperation(msg, tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
-                            break;
-                        case AFTER_SWAP:
-                            swapAfterOperation(tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
+						case SWAP:
+                            swapOperation(tmp, mapper.getKey(), mapper.getValue(), mapperCategory, errorList);
                             break;
                         case TRANSCODING:
-                            transcode(tmp, mapper.getKey(), mapper.getValue(), errorList);
+							transcode(tmp, mapper.getKey(), mapper.getValue());
                             break;
                         case CLEAR_IF:
                             clearIfOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
@@ -411,9 +384,9 @@ public class MapperEngine {
                         case REPLACE:
                             replaceOperation(tmp, mapper.getKey(), mapper.getValue(), errorList);
                             break;
-					case TEXT_IF:
-						textIf(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
-						break;
+						case TEXT_IF:
+							textIf(msg, tmp, mapper.getKey(), mapper.getValue(), errorList);
+							break;
                         default:
                             errorList.add(new MapperError(mapper.getKey().toString(), "No Category: " + mapperCategory));
                     }
