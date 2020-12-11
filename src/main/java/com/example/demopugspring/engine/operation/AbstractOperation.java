@@ -46,7 +46,7 @@ public abstract class AbstractOperation {
 	protected List<String> keys;
 	protected String value;
 
-	private boolean useOriginalValue;
+	private boolean useOriginalValue = true;
 
 	protected ArrayList<MapperError> errors = new ArrayList<>();
 
@@ -65,13 +65,13 @@ public abstract class AbstractOperation {
 		this.outgoingTerser = outgoingTerser;
 
 		this.keys = keys;
-		this.useOriginalValue = false;
 
 		if (value.startsWith(USE_MSG_VALUE_PREFIX)) {
 			this.value = value.substring(USE_MSG_VALUE_PREFIX.length());
 			this.useOriginalValue = true;
 		} else if (value.startsWith(USE_TMP_VALUE_PREFIX)) {
 			this.value = value.substring(USE_TMP_VALUE_PREFIX.length());
+			this.useOriginalValue = false;
 		} else {
 			this.value = value;
 		}
