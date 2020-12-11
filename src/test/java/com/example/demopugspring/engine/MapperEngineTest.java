@@ -205,7 +205,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = {"/PID-28"};
 		meng.countryCodes = codes;
-		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS");
 		assertEquals(toBeReturned, terserSpy.get("/PID-28-1"));
 	}
 
@@ -230,7 +230,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = { "/INSURANCE/IN1-3" };
 		meng.insurersCodes = codes;
-		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "INSURERS-CODES", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "INSURERS-CODES");
 		assertEquals(toBeReturned, terserSpy.get("/INSURANCE/IN1-3"));
 	}
 
@@ -253,7 +253,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = {"/PATIENT/PID-28"};
 		meng.countryCodes = codes;
-		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS");
 		assertEquals(toBeReturned, terserSpy.get("/PATIENT/PID-28-1"));
 	}
 
@@ -279,14 +279,14 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = {"/PID-3(#)-4"};
 		meng.identificationCodes = codes;
-		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "IDENTIFICATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "IDENTIFICATIONS");
 		assertEquals(toBeReturned, terserSpy.get("/PID-3(0)-4"));
 		assertEquals(toBeReturned2, terserSpy.get("/PID-3(1)-4"));
 
 	}
 
 	@Test
-	void testAfterField() throws HL7Exception {
+	void testFieldRefactored() throws HL7Exception {
 		String toBeReturned = "CUFC";
 		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS|TESTE|20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
 				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
@@ -297,7 +297,7 @@ class MapperEngineTest {
 
 		MapperEngine meng = new MapperEngine();
 		String[] testeListaKeys = { "/MSH-6" };
-		meng.fieldAfterOperation(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.AFTER_FIELD, errors);
+		meng.mapper(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.FIELD, errors);
 		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
 	}
 
@@ -320,7 +320,7 @@ class MapperEngineTest {
 
 		String[] testeListaKeys = { "/PID-23" };
 		meng.countryCodes = codes;
-		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS", errors);
+		meng.transcode(terserSpy, Arrays.asList(testeListaKeys), "GH-LOCATIONS");
 		assertEquals(toBeReturned, terserSpy.get("/PID-23-1"));
 	}
 
@@ -493,7 +493,7 @@ class MapperEngineTest {
 	}
 
 	@Test
-	void testAfterFieldEmpty() throws HL7Exception {
+	void testFieldRefatorEmpty() throws HL7Exception {
 		String toBeReturned = "CUFC";
 		String messageString = "MSH|^~\\&|GH|CUFC|ehCOS||20201117172651||ADT^A40|1604236349|P|2.4|||AL\r" +
 				"PID|||42341818^^^JMS^NS~684028^^^CUFC^NS|" + toBeReturned + "^^^NIF^PT|SEGUNDO^CLIENTE TESTE ECOS CUFC O||19821209|M|||^^^^^1||^^^^^^900000000|||||||||||||||1^PORTUGAL||N\r";
@@ -504,7 +504,7 @@ class MapperEngineTest {
 
 		MapperEngine meng = new MapperEngine();
 		String[] testeListaKeys = { "/MSH-6" };
-		meng.fieldAfterOperation(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.AFTER_FIELD, errors);
+		meng.mapper(terserSpy, terserSpy, Arrays.asList(testeListaKeys), "/MSH-4", Category.FIELD, errors);
 		assertEquals(toBeReturned, terserSpy.get("/MSH-6"));
 	}
 
